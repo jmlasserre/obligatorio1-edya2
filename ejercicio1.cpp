@@ -10,6 +10,7 @@ class NodoAVL
 private:
     NodoAVL *izq;
     NodoAVL *der;
+    int altura;
     int id;
     string nombre;
     int puntaje;
