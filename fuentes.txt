@@ -1,1 +1,3 @@
 AVL: https://www.geeksforgeeks.org/cpp/cpp-program-to-implement-avl-tree/
+Información sobre cin/cout: https://www.geeksforgeeks.org/cpp/cin-in-c/, https://en.cppreference.com/w/cpp/io/cin.html
+
