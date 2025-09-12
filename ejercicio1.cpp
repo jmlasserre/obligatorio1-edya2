@@ -5,64 +5,33 @@
 
 using namespace std;
 
-struct NodoLista
-{
-    NodoLista *sig;
-    string nombre;
-    int id;
-};
-
-typedef NodoLista *Lista;
-
-Lista crearListaVacia()
-{
-    Lista l = new NodoLista;
-    l->sig = NULL;
-    l->nombre = "";
-    l->id = 0;
-    return l;
-}
-
-void insertar(Lista &l, int id, string nombre)
-{
-    NodoLista *nuevo = new NodoLista;
-    nuevo->id = id;
-    nuevo->nombre = nombre;
-    nuevo->sig = l;
-}
-
 struct NodoAVL
 {
     NodoAVL *izq;
     NodoAVL *der;
     int altura;
     int puntaje;
-    NodoLista *listaJugadores;
+    int id;
+    string nombre;
 
     NodoAVL(int idJugador, string nombreJugador, int puntajeJugador)
     {
         izq = NULL;
         der = NULL;
-        NodoLista *jugadores = crearListaVacia();
-        listaJugadores = jugadores;
-        insertar(listaJugadores, idJugador, nombreJugador);
         puntaje = puntajeJugador;
+        id = idJugador;
         altura = 1;
+        nombre = nombreJugador;
     }
 };
 
 class ArbolAVL
 {
 private:
-    int cantidad;
+    int cantJugadores;
+    int puntajeMax;
+    string top1;
     NodoAVL *raiz;
-
-public:
-    ArbolAVL(int cantidad)
-    {
-        cantidad = cantidad;
-        raiz = NULL;
-    }
 
     int altura(NodoAVL *raiz)
     {
@@ -78,6 +47,7 @@ public:
         return altura(raiz->izq) - altura(raiz->der);
     }
 
+    // Adaptado de las slides del curso (https://avl.uruguayan.ninja/8)
     void rotarDerecha(NodoAVL *&raiz)
     {
         NodoAVL *x = raiz->izq;
@@ -93,7 +63,7 @@ public:
 
         raiz = x;
     }
-
+    // Adaptado de las slides del curso (https://avl.uruguayan.ninja/8)
     void rotarIzquierda(NodoAVL *&raiz)
     {
         NodoAVL *y = raiz->der;
@@ -111,69 +81,113 @@ public:
     }
 
     // Adaptado de las slides del curso (https://avl.uruguayan.ninja/7)
-    void ADD(NodoAVL *&raiz, int idJugador, string nombreJugador, int puntajeJugador)
+    void agregarJugador(NodoAVL *&raiz, int idJugador, string nombreJugador, int puntajeJugador)
     {
         if (raiz == NULL)
         {
             raiz = new NodoAVL(idJugador, nombreJugador, puntajeJugador);
+            cantJugadores++;
+            puntajeMax = puntajeJugador;
+            top1 = nombreJugador;
             return;
         }
-        if (puntajeJugador < raiz->puntaje)
+        if (idJugador < raiz->id)
         {
-            ADD(raiz->izq, idJugador, nombreJugador, puntajeJugador);
+            agregarJugador(raiz->izq, idJugador, nombreJugador, puntajeJugador);
         }
-        else if (puntajeJugador > raiz->puntaje)
-            ADD(raiz->der, idJugador, nombreJugador, puntajeJugador);
+        else if (idJugador > raiz->id)
+            agregarJugador(raiz->der, idJugador, nombreJugador, puntajeJugador);
         else
-            insertar(raiz->listaJugadores, idJugador, nombreJugador);
-        raiz->altura = 1 + max(altura(raiz->izq), altura(raiz->der));
+            return; // las ID son iguales. No hay que hacer nada.
 
+        if (puntajeJugador > puntajeMax)
+        {
+            puntajeMax = puntajeJugador;
+            top1 = nombreJugador;
+        }
+
+        cantJugadores++;
+        raiz->altura = 1 + max(altura(raiz->izq), altura(raiz->der));
         int balance = obtenerBalance(raiz);
 
         // Caso II
-        if (balance < -1 && puntajeJugador < raiz->izq->puntaje)
+        if (balance < -1 && idJugador < raiz->izq->id)
             rotarDerecha(raiz);
 
         // Caso DD
-        if (balance > 1 && puntajeJugador > raiz->der->puntaje)
+        if (balance > 1 && idJugador > raiz->der->id)
             rotarIzquierda(raiz);
 
         // Caso ID
-        if (balance < -1 && puntajeJugador > raiz->izq->puntaje)
+        if (balance < -1 && idJugador > raiz->izq->id)
         {
             rotarIzquierda(raiz->izq);
             rotarDerecha(raiz);
         }
 
         // Caso DI
-        if (balance > 1 && puntajeJugador < raiz->der->puntaje)
+        if (balance > 1 && idJugador < raiz->der->id)
         {
             rotarDerecha(raiz->der);
             rotarIzquierda(raiz);
         }
     }
 
+    void encontrarJugador(NodoAVL *raiz, int id)
+    {
+        if (!raiz)
+            cout << "jugador_no_encontrado" << endl;
+        return;
+        if (raiz->id == id)
+        {
+            cout << raiz->nombre << raiz->puntaje << endl;
+            return;
+        }
+        if (raiz->id < id)
+            encontrarJugador(raiz->der, id);
+        else
+            encontrarJugador(raiz->izq, id);
+    }
+
+    int puntajeSuperiorA(NodoAVL *r, int puntaje)
+    {
+        if (!r)
+            return 0;
+        if (r->puntaje >= puntaje)
+            return 1 + puntajeSuperiorA(r->izq, puntaje) + puntajeSuperiorA(r->der, puntaje);
+    }
+
+public:
+    ArbolAVL()
+    {
+        cantJugadores = 0;
+        puntajeMax = 0;
+        raiz = NULL;
+    }
+
+    void ADD(int idJugador, string nombreJugador, int puntajeJugador)
+    {
+        agregarJugador(raiz, idJugador, nombreJugador, puntajeJugador);
+    }
+
     void FIND(int id)
     {
-        // TODO
-        // Debe imprimir "{nombre} {puntaje}" o "jugador_no_encontrado"
+        encontrarJugador(raiz, id);
     }
 
     void RANK(int puntaje)
     {
-        // TODO
-        // imprime la cantidad de jugadores con puntaje >= al indicado
+        cout << puntajeSuperiorA(raiz, puntaje) << endl;
     }
 
     void TOP1()
     {
-        // TODO
-        // retorna el jugador con mayor puntaje
+        cout << top1 << puntajeMax << endl;
     }
 
     void COUNT()
     {
-        cout << cantidad;
+        cout << cantJugadores << endl;
     }
 };
 
