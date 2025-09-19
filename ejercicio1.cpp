@@ -16,30 +16,27 @@ struct NodoAVL
     NodoAVL *izq;
     NodoAVL *der;
     int altura;
-    int puntaje;
-    int id;
+    int paramMain;
+    int paramSec;
     string nombre;
+    int reps;
 
-    NodoAVL(int idJugador, string nombreJugador, int puntajeJugador)
+    NodoAVL(int paramMainJugador, int paramSecJugador, string nombreJugador)
     {
         izq = NULL;
         der = NULL;
-        puntaje = puntajeJugador;
-        id = idJugador;
+        paramMain = paramMainJugador;
+        paramSec = paramSecJugador;
         altura = 1;
         nombre = nombreJugador;
+        reps=0;
     }
 };
 
 class ArbolAVL
 {
 private:
-    int cantJugadores;
-    int puntajeMax;
-    string top1;
-    NodoAVL *raiz;
-    NodoAVL *scores;
-
+    bool aceptaReps;
     int altura(NodoAVL *raiz)
     {
         if (!raiz)
@@ -87,58 +84,15 @@ private:
         raiz = y;
     }
 
-    // Adaptado de las slides del curso (https://avl.uruguayan.ninja/7)
-    void agregarJugador(NodoAVL *&raiz, int idJugador, string nombreJugador, int puntajeJugador, bool score)
+public:
+    int cantidad;
+    NodoAVL *raiz;
+    ArbolAVL(bool aceptaReps)
     {
-        if (raiz == NULL)
-        {
-            raiz = new NodoAVL(idJugador, nombreJugador, puntajeJugador);
-            if (!score)
-            {
-                if (puntajeJugador > puntajeMax)
-                {
-                    puntajeMax = puntajeJugador;
-                    top1 = nombreJugador;
-                }
-                cantJugadores++;
-                return;
-            }
-        }
-        if (idJugador < raiz->id)
-        {
-            agregarJugador(raiz->izq, idJugador, nombreJugador, puntajeJugador, score);
-        }
-        else if (idJugador > raiz->id)
-            agregarJugador(raiz->der, idJugador, nombreJugador, puntajeJugador, score);
-        else
-            return; // las ID son iguales. No hay que hacer nada.
-
-        raiz->altura = 1 + max(altura(raiz->izq), altura(raiz->der));
-        int balance = obtenerBalance(raiz);
-
-        // Caso II
-        if (balance < -1 && raiz->izq && idJugador < raiz->izq->id)
-            rotarDerecha(raiz);
-
-        // Caso DD
-        if (balance > 1 && raiz->der && idJugador > raiz->der->id)
-            rotarIzquierda(raiz);
-
-        // Caso ID
-        if (balance < -1 && raiz->izq && idJugador > raiz->izq->id)
-        {
-            rotarIzquierda(raiz->izq);
-            rotarDerecha(raiz);
-        }
-
-        // Caso DI
-        if (balance > 1 && raiz->der && idJugador < raiz->der->id)
-        {
-            rotarDerecha(raiz->der);
-            rotarIzquierda(raiz);
-        }
+        cantidad = 0;
+        raiz = NULL;
+        aceptaReps = aceptaReps;
     }
-
     void encontrarJugador(NodoAVL *raiz, int id)
     {
         if (!raiz)
@@ -146,55 +100,120 @@ private:
             cout << "Jugador_no_encontrado" << endl;
             return;
         }
-        if (raiz->id == id)
+        if (raiz->paramMain == id)
         {
-            cout << raiz->nombre << " " << raiz->puntaje << endl;
+            cout << raiz->nombre << " " << raiz->paramSec << endl;
             return;
         }
-        if (raiz->id < id)
+        if (raiz->paramMain < id)
             encontrarJugador(raiz->der, id);
         else
             encontrarJugador(raiz->izq, id);
     }
+    // Adaptado de las slides del curso (https://avl.uruguayan.ninja/7)
+    void agregarNodo(NodoAVL *&raiz, int paramMainJugador, int paramSecJugador, string nombreJugador)
+    {
+        if (raiz == NULL)
+        {
+            raiz = new NodoAVL(paramMainJugador, paramSecJugador, nombreJugador);
+            cantidad++;
+            return;
+        }
+        if (paramMainJugador < raiz->paramMain)
+        {
+            agregarNodo(raiz->izq, paramMainJugador, paramSecJugador, nombreJugador);
+        }
+        else if (paramMainJugador > raiz->paramMain)
+        {
+            agregarNodo(raiz->der, paramMainJugador, paramSecJugador, nombreJugador);
+        }
+        else
+        {
+            if (aceptaReps)
+            {
+                raiz->reps++;
+            }
+            else
+            {
+                return;
+            }
+        }
+        raiz->altura = 1 + max(altura(raiz->izq), altura(raiz->der));
+        int balance = obtenerBalance(raiz);
+
+        // Caso II
+        if (balance < -1 && raiz->izq && paramMainJugador < raiz->izq->paramMain)
+            rotarDerecha(raiz);
+
+        // Caso DD
+        if (balance > 1 && raiz->der && paramMainJugador > raiz->der->paramMain)
+            rotarIzquierda(raiz);
+
+        // Caso ID
+        if (balance < -1 && raiz->izq && paramMainJugador > raiz->izq->paramMain)
+        {
+            rotarIzquierda(raiz->izq);
+            rotarDerecha(raiz);
+        }
+
+        // Caso DI
+        if (balance > 1 && raiz->der && paramMainJugador < raiz->der->paramMain)
+        {
+            rotarDerecha(raiz->der);
+            rotarIzquierda(raiz);
+        }
+    }
+};
+
+class Ranking
+{
+private:
+    ArbolAVL *jugadores;
+    ArbolAVL *puntajes;
+    int puntajeMax;
+    string top1;
 
     int puntajeSuperiorA(NodoAVL *r, int puntaje)
     {
         if (!r)
             return 0;
-        if (r->id >= puntaje)
-            return 1 + puntajeSuperiorA(r->izq, puntaje) + puntajeSuperiorA(r->der, puntaje);
+        if (r->paramMain >= puntaje)
+            return 1 + r->reps + puntajeSuperiorA(r->izq, puntaje) + puntajeSuperiorA(r->der, puntaje);
         else
             return puntajeSuperiorA(r->der, puntaje);
     }
 
-    void agregarScore(NodoAVL *&a, int puntaje, string nombreJugador, int idJugador, bool score)
-    {
-        agregarJugador(a, puntaje, nombreJugador, idJugador, true);
-    }
-
 public:
-    ArbolAVL()
+    Ranking()
     {
-        cantJugadores = 0;
+        jugadores = new ArbolAVL(false);
+        puntajes = new ArbolAVL(true);
         puntajeMax = 0;
-        raiz = NULL;
-        scores = NULL;
+        top1 = "";
     }
-
     void ADD(int idJugador, string nombreJugador, int puntajeJugador)
     {
-        agregarScore(scores, puntajeJugador, nombreJugador, idJugador, true);
-        agregarJugador(raiz, idJugador, nombreJugador, puntajeJugador, false);
+        int cantTemp = jugadores->cantidad;
+        jugadores->agregarNodo(jugadores->raiz, idJugador, puntajeJugador, nombreJugador);
+        if (cantTemp < jugadores->cantidad)
+        { // se agregó un jugador
+            puntajes->agregarNodo(puntajes->raiz, puntajeJugador, idJugador, nombreJugador);
+            if (puntajeJugador > puntajeMax)
+            {
+                puntajeMax = puntajeJugador;
+                top1 = nombreJugador;
+            }
+        }
     }
 
     void FIND(int id)
     {
-        encontrarJugador(raiz, id);
+        jugadores->encontrarJugador(jugadores->raiz, id);
     }
 
     void RANK(int puntaje)
     {
-        cout << puntajeSuperiorA(scores, puntaje) << endl;
+        cout << puntajeSuperiorA(puntajes->raiz, puntaje) << endl;
     }
 
     void TOP1()
@@ -204,7 +223,7 @@ public:
 
     void COUNT()
     {
-        cout << cantJugadores << endl;
+        cout << jugadores->cantidad << endl;
     }
 };
 
@@ -213,7 +232,7 @@ int main()
     int N;
     string valor;
     cin >> N;
-    ArbolAVL a = ArbolAVL();
+    Ranking *ranking = new Ranking();
     for (int i = 0; i < N; i++)
     {
         string comando;
@@ -224,27 +243,27 @@ int main()
             int puntaje;
             string nombre;
             cin >> id >> nombre >> puntaje;
-            a.ADD(id, nombre, puntaje);
+            ranking->ADD(id, nombre, puntaje);
         }
         else if (comando == "FIND")
         {
             int id;
             cin >> id;
-            a.FIND(id);
+            ranking->FIND(id);
         }
         else if (comando == "RANK")
         {
             int puntaje;
             cin >> puntaje;
-            a.RANK(puntaje);
+            ranking->RANK(puntaje);
         }
         else if (comando == "TOP1")
         {
-            a.TOP1();
+            ranking->TOP1();
         }
         else if (comando == "COUNT")
         {
-            a.COUNT();
+            ranking->COUNT();
         }
         else
         {

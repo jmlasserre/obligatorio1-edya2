@@ -2,6 +2,23 @@
 
 Este repositorio es una plantilla para comenzar los trabajos obligatorios de la materia de Estructura de Datos y Algoritmos 2 en C++.
 
+## Checklist
+
+### Obligatorio 1
+- [ ] Ejercicio 1
+- [ ] Ejercicio 2
+- [ ] Ejercicio 3
+- [ ] Ejercicio 4
+- [ ] Ejercicio 5
+
+### Obligatorio 2
+
+- [ ] Ejercicio 6
+- [ ] Ejercicio 7
+- [ ] Ejercicio 8
+- [ ] Ejercicio 9
+- [ ] Ejercicio 10
+
 ## Estructura del Repositorio
 
 - `funciones/`: Carpeta para funciones auxiliares que puedes utilizar en tus ejercicios.
