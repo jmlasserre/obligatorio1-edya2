@@ -29,7 +29,7 @@ struct NodoAVL
         paramSec = paramSecJugador;
         altura = 1;
         nombre = nombreJugador;
-        reps=0;
+        reps = 0;
     }
 };
 
