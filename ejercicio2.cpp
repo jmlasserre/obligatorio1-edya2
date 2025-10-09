@@ -59,6 +59,49 @@ public:
         insertarNoReps(dominio, path, titulo, tiempo, pos, 1);
     }
 
+    NodoHash *buscar(string dominio, string path, string key) {
+        int hash1 = miHash1(key);
+        int hash2 = miHash2(key);
+        int intento = 0;
+
+        while (intento < largo) {
+            int pos = (hash1 + intento * hash2) % largo;
+
+            if (tabla[pos]->libre) {
+                return nullptr;
+            }
+
+            if (tabla[pos]->dominio == dominio && tabla[pos]->path == path) {
+                return tabla[pos];
+            }
+            intento++;
+        }
+        return nullptr;
+    }
+
+    void eliminar(string dominio, string path, string key) {
+        
+        int hash1 = miHash1(key);
+        int hash2 = miHash2(key);
+        int intento = 0;
+
+        while(intento < largo) {
+            int pos = (hash1 + intento * hash2) % largo;
+
+            if(tabla[pos]->dominio == dominio && tabla[pos]->path == path) {
+                
+                tabla[pos]->dominio = "";
+                tabla[pos]->path = "";
+                tabla[pos]->titulo = "";
+                tabla[pos]->reps = 0;
+                tabla[pos]->tiempo = 0;
+                tabla[pos]->libre = true;
+                cantidad--;
+            }
+            intento++;
+        }
+    }
+
 private:
     int cantidad;
     int largo;
@@ -112,7 +155,7 @@ class Cache
 public:
     int largo;
     TablaHash *dominio_path;
-    TablaHash* dominio_hash;
+    TablaHash *dominio_hash;
 
     unsigned int nextPrime(unsigned int n)
     {
@@ -144,19 +187,35 @@ public:
     }
     void GET(string dominio, string path)
     {
-        // TODO: GET
+        NodoHash* resultado = dominio_path->buscar(dominio, path, (dominio + path));
+        if(resultado != nullptr){
+            cout << resultado->titulo << "" << resultado->tiempo;
+        }
+        else {
+            cout << "recurso_no_encontrado" << endl;
+        }
     }
+
     void REMOVE(string dominio, string path)
     {
-        // TODO: REMOVE
+        dominio_path->eliminar(dominio, path, (dominio + path));
+        dominio_hash->eliminar(dominio, path, dominio);
+        
     }
     void CONTAINS(string dominio, string path)
     {
-        // TODO: CONTAINS
+        NodoHash* resultado = dominio_path->buscar(dominio, path, (dominio + path));
+
+        if(resultado != nullptr) {
+            cout << true << endl;
+        }
+        else {
+            cout << false << endl;
+        }
     }
     void COUNT_DOMAIN(string dominio)
     {
-        cout << "" << endl;
+        
     }
     void LIST_DOMAIN(string dominio)
     {
