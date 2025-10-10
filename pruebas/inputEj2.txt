@@ -1,0 +1,11 @@
+10
+PUT google.com /search SearchPage 1000
+PUT google.com /images ImagePage 1500
+PUT google.com /maps MapsPage 1200
+PUT facebook.com /feed FeedPage 2000
+SIZE
+GET google.com /search
+LIST_DOMAIN google.com
+COUNT_DOMAIN google.com
+CONTAINS google.com /images
+CONTAINS facebook.com /home

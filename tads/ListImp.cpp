@@ -77,7 +77,7 @@ public:
         Node *current = head;
         while (current != NULL)
         {
-            // note: that the elment should implement == operator
+            // note: that the element should implement == operator
             if (current->element == element)
             {
                 if (current == head)
