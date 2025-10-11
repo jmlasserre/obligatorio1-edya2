@@ -9,17 +9,10 @@ Comando_procesado
 Comando_a_procesar:SIZE
 4
 Comando_procesado
-Comando_a_procesar:GET
-SearchPage 1000
+Comando_a_procesar:CLEAR_DOMAIN
+hola
+hola
+hola
+hola
 Comando_procesado
 Comando_a_procesar:LIST_DOMAIN
-/maps /images /search Comando_procesado
-Comando_a_procesar:COUNT_DOMAIN
-3
-Comando_procesado
-Comando_a_procesar:CONTAINS
-true
-Comando_procesado
-Comando_a_procesar:CONTAINS
-false
-Comando_procesado

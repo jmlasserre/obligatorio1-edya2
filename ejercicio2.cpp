@@ -88,7 +88,25 @@ public:
         }
         return false;
     }
+    // PRE:
+    // POS: a ver si funciona con esto
+    void eliminar(NodoLista *&nodo)
+    {
+        if (!nodo)
+            return;
+        if (nodo == head)
+            head = nodo->sig;
+        if (nodo == tail)
+            tail = nodo->ant;
+        if (nodo->ant)
+            nodo->ant->sig = nodo->sig;
+        if (nodo->sig)
+            nodo->sig->ant = nodo->ant;
 
+        delete nodo;
+        nodo = nullptr;
+        largo--;
+    }
     // PRE:
     // POS: "actualiza" la posición de index en la lista; lo elimina y lo agrega al principio
     void actualizar(int index)
@@ -106,6 +124,21 @@ public:
     {
         return this->largo;
     }
+
+    ~Lista()
+    {
+        if (!head)
+            return; // O(1) para listas vacías así que no afecta REMOVE
+        NodoLista *aBorrar = head;
+        while (aBorrar->sig)
+        {
+            NodoLista *borro = aBorrar;
+            aBorrar = aBorrar->sig;
+            delete borro;
+        }
+        delete aBorrar;
+        head = tail = nullptr;
+    }
 };
 
 class NodoHash
@@ -118,7 +151,7 @@ public:
         libre = true;
     }
 
-    NodoHash(string dominio, string path, string titulo, int tiempo) : dominio(dominio), path(path), titulo(titulo), tiempo(tiempo), libre(true), l(Lista()) {}
+    NodoHash(string dominio, string path, string titulo, int tiempo) : dominio(dominio), path(path), titulo(titulo), tiempo(tiempo), libre(false), l(Lista()) {}
     Lista l;
     string dominio;
     string path;
@@ -130,6 +163,7 @@ public:
 class TablaHash
 {
 public:
+    NodoHash **tabla;
     TablaHash(int largo)
     {
         this->largo = largo;
@@ -154,20 +188,31 @@ public:
         return cantidad;
     }
 
-    // si no funciona esto toca corchazo
     void recorrerDominio(string dominio)
     {
+        int intentos = 1;
         int pos = miHash1(dominio) % largo;
-        NodoLista *headDominio = tabla[pos]->l.head;
-        while (headDominio)
+        while (intentos <= largo && tabla[pos])
         {
-            string path = tabla[headDominio->index]->path;
-            cout << path << " ";
-            headDominio = headDominio->sig;
+            if (tabla[pos]->dominio == dominio)
+            {
+                NodoLista *p = tabla[pos]->l.head;
+                while (p)
+                {
+                    int idx = p->index;
+                    if (tabla[idx] && !tabla[idx]->libre)      // filtrar tombstones
+                        cout << tabla[idx]->path << " ";
+                    p = p->sig;
+                }
+                cout << endl;
+                return;
+            }
+            pos = (miHash1(dominio) + (++intentos) * miHash2(dominio)) % largo;
         }
+        cout << endl; // dominio inexistente => línea vacía
     }
 
-    void insertarDominio(string dominio, string path, string titulo, int tiempo)
+    void insertarTablaDominio(string dominio, string path, string titulo, int tiempo)
     {
         fc = (float)cantidad / (float)largo;
         if (fc > 0.7)
@@ -206,7 +251,8 @@ public:
                     }
                     aux = aux->sig;
                 }
-                if (encontrado) return;
+                if (encontrado)
+                    return;
                 // o sea, aquí recorrí toda la lista del dominio y no estaba así que debe ser nuevo
                 pos = (miHash1(dominio) + intentos * miHash2(dominio)) % largo;
                 while (tabla[pos])
@@ -262,21 +308,176 @@ public:
         int pos = miHash1(dominio) % largo;
         while (tabla[pos] && intentos <= largo)
         {
-            if (tabla[pos]->dominio == dominio) return tabla[pos]->l.getLargo();
+            if (tabla[pos]->dominio == dominio)
+                return tabla[pos]->l.getLargo();
             pos = (miHash1(dominio) + (++intentos) * miHash2(dominio)) % largo;
         }
         return 0;
     }
 
-    void eliminar(string dominio, string path)
+    void eliminarTablaDominio(string dominio, string path)
     {
+        int intentos = 1;
+        int pos = miHash1(dominio) % largo;
+        while (tabla[pos] && intentos <= largo)
+        {
+            if (tabla[pos]->dominio == dominio)
+            {
+                NodoLista *listaPaths = tabla[pos]->l.head;
+                NodoLista *aBorrar = nullptr;
+                NodoLista *cand = nullptr;
+                /* La idea es poder siempre borrar el nodo, incluso cuando es el home.
+                Entonces hay que ir llevando registro de si tenemos un candidato para reemplazarlo si llega a pasar.
+                Por las dudas, el "home" es el nodo de la tabla dominio_hash con key = dominio.*/
+                while (listaPaths)
+                {
+                    int idx = listaPaths->index;
+                    if (tabla[idx] && tabla[idx]->path == path)
+                    {
+                        aBorrar = listaPaths; // este sería el caso que te digo si se da al principio
+                    }
+                    if (!cand && idx != pos)
+                    { // si no hay candidato y no estoy parado en el inicio...
+                        cand = listaPaths;
+                    }
+                    listaPaths = listaPaths->sig;
+                }
+                if (!aBorrar)
+                    return; // no existía ese path
+                int idx = aBorrar->index;
+                if (idx != pos)
+                {
+                    tabla[pos]->l.eliminar(aBorrar);
+                    tombstone(idx);
+                    cantidad--;
+                    return;
+                }
+                if (!cand)
+                { // existía, pero era el único
+                    tabla[pos]->l.eliminar(aBorrar);
+                    tombstone(pos);
+                    cantidad--;
+                    return;
+                }
+                // existe y hay más: hay que mover la lista
+                int indexCand = cand->index;
+                tabla[pos]->path = tabla[indexCand]->path;
+                tabla[pos]->titulo = tabla[indexCand]->titulo;
+                tabla[pos]->tiempo = tabla[indexCand]->tiempo;
+
+                cand->index = pos;
+                tabla[pos]->l.eliminar(aBorrar);
+                tombstone(indexCand);
+                cantidad--;
+                return;
+                // borramos el que estaba ahí y movemos los datos del candidato al home.
+                // de esta forma no hace falta modificar la lista.
+            }
+            pos = (miHash1(dominio) + (intentos++) * miHash2(dominio)) % largo;
+        }
+    }
+
+    void eliminarCompuesto(string dominio, string path)
+    {
+        int intentos = 1;
+        int pos = miHash1(dominio + path) % largo;
+        while (tabla[pos] && intentos <= largo) // si tabla[pos] es nullptr, no estaba en la tabla
+        {
+            if (tabla[pos]->dominio == dominio && tabla[pos]->path == path)
+            {
+                tombstone(pos);
+                cantidad--;
+                return;
+            }
+            pos = (miHash1(dominio + path) + (++intentos) * miHash2(dominio + path)) % largo;
+        }
+    }
+
+    NodoLista* getRecursosAEliminar(string dominio){
+        int intentos = 1;
+        int pos = miHash1(dominio)%largo;
+        while (tabla[pos] && intentos <= largo){
+            if (tabla[pos]->dominio == dominio) return tabla[pos]->l.head;
+            pos = (miHash1(dominio)+(++intentos)*miHash2(dominio))%largo;
+        }
+        return nullptr; 
+    }
+
+    void eliminarDominio(string dominio)
+    {
+        int intentos = 1;
+        int pos = miHash1(dominio) % largo;
+        while (tabla[pos] && intentos <= largo)
+        {
+            if (!tabla[pos]->libre && tabla[pos]->dominio == dominio)
+            {
+                // Mientras haya recursos del dominio, borrarlos cuidando el anchor
+                while (tabla[pos]->l.head)
+                {
+                    NodoLista* node = tabla[pos]->l.head;     // siempre borramos el head actual
+                    int idx = node->index;
+
+                    if (idx != pos)
+                    {
+                        // Caso simple: no es el anchor
+                        tombstone(idx);
+                        tabla[pos]->l.eliminar(node);          // O(1): actualiza head/tail/largo
+                        cantidad--;
+                    }
+                    else
+                    {
+                        // Estamos borrando el anchor
+                        NodoLista* next = node->sig;           // siguiente en la lista del dominio
+                        if (!next)
+                        {
+                            // Era el único recurso del dominio
+                            tombstone(pos);
+                            tabla[pos]->l.eliminar(node);      // lista queda vacía
+                            cantidad--;
+                            break;
+                        }
+                        // Promover el siguiente al anchor
+                        int nextIdx = next->index;
+                        // Copiamos payload del siguiente al anchor (dominio es el mismo)
+                        tabla[pos]->path   = tabla[nextIdx]->path;
+                        tabla[pos]->titulo = tabla[nextIdx]->titulo;
+                        tabla[pos]->tiempo = tabla[nextIdx]->tiempo;
+
+                        // El nodo 'next' ahora representa al anchor (pos)
+                        next->index = pos;
+
+                        // Eliminar el nodo que apuntaba al viejo anchor de la lista
+                        tabla[pos]->l.eliminar(node);
+
+                        // Liberar el slot físico del promovido
+                        tombstone(nextIdx);
+                        cantidad--;
+                        // Continuar: aún puede haber más recursos del dominio
+                    }
+                }
+                return;
+            }
+            pos = (miHash1(dominio) + (++intentos) * miHash2(dominio)) % largo;
+        }
+        // dominio no encontrado: nada que hacer
     }
 
 private:
     int cantidad;
     int largo;
     float fc;
-    NodoHash **tabla;
+
+    // en vez de borrar los nodos, hay que marcarlos como "vacíos".
+    void tombstone(int index)
+    {
+        if (!tabla[index])
+            return;
+        tabla[index]->libre = true;
+        tabla[index]->dominio = "";
+        tabla[index]->path = "";
+        tabla[index]->titulo = "";
+        tabla[index]->tiempo = 0;
+    }
 
     // Adaptado de: https://cp-algorithms.com/string/string-hashing.html (polynomial rolling hash function)
     unsigned int miHash1(string key)
@@ -337,7 +538,7 @@ public:
     }
     void PUT(string dominio, string path, string titulo, int tiempo)
     {
-        dominio_hash->insertarDominio(dominio, path, titulo, tiempo);
+        dominio_hash->insertarTablaDominio(dominio, path, titulo, tiempo);
         dominio_path->insertarCompuesto(dominio, path, titulo, tiempo);
     }
     void GET(string dominio, string path)
@@ -352,18 +553,21 @@ public:
             cout << busqueda->titulo << " " << busqueda->tiempo << endl;
         }
     }
-
     void REMOVE(string dominio, string path)
     {
-
+        dominio_hash->eliminarTablaDominio(dominio, path);
+        dominio_path->eliminarCompuesto(dominio, path);
     }
 
     void CONTAINS(string dominio, string path)
     {
-        NodoHash* busqueda = dominio_path->buscar(dominio,path);
-        if (!busqueda){
+        NodoHash *busqueda = dominio_path->buscar(dominio, path);
+        if (!busqueda)
+        {
             cout << "false" << endl;
-        } else {
+        }
+        else
+        {
             cout << "true" << endl;
         }
     }
@@ -380,7 +584,16 @@ public:
 
     void CLEAR_DOMAIN(string dominio)
     {
-        cout << "TODO_Porque_Soy_Vago" << endl;
+        NodoLista *recursosABorrar = dominio_hash->getRecursosAEliminar(dominio);
+        cout << "hola" << endl;
+        while (recursosABorrar)
+        {
+            dominio_path->eliminarCompuesto(dominio_hash->tabla[recursosABorrar->index]->dominio, dominio_hash->tabla[recursosABorrar->index]->path);
+            cout << "hola" << endl;
+            NodoLista *borro = recursosABorrar;
+            recursosABorrar = recursosABorrar->sig;
+            delete borro;
+        }
     }
 
     void SIZE()
