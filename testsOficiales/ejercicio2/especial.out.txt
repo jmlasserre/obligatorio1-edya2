@@ -1,0 +1,16 @@
+5
+3
+2
+/maps /images /search 
+SearchPage 1000
+false
+true
+UpdatedSearch 1800
+/search /maps /images 
+1
+4
+1
+0
+ 
+2
+0

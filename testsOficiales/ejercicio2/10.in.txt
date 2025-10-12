@@ -1,0 +1,11 @@
+10
+PUT amazon.com /dashboard VideosPage 48032565
+GET amazon.com /dashboard
+REMOVE netflix.com /dashboard
+PUT microsoft.com /dashboard ErrorPage 278706432
+GET microsoft.com /dashboard
+CONTAINS microsoft.com /dashboard
+PUT apple.com /download ProfilePage 396301254
+GET amazon.com /dashboard
+REMOVE apple.com /download
+PUT github.com /api APIPage 254722414

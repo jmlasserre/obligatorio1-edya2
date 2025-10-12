@@ -1,9 +1,11 @@
-8
-PUT google.com /search SearchPage 1000
-PUT google.com /images ImagePage 1500
-PUT google.com /maps MapsPage 1200
-PUT facebook.com /feed FeedPage 2000
-SIZE
-CLEAR_DOMAIN google.com
+10
+PUT google.com /images Image 2000
+PUT linkedin.com /cache Cache 3211
+PUT netflix.com /nashe Aasd 4001
+PUT google.com /o LGG 2000
+PUT google.com /hola Hoal 99999
 LIST_DOMAIN google.com
+CLEAR
 COUNT_DOMAIN google.com
+PUT google.com /test hola 2000
+LIST_DOMAIN google.com

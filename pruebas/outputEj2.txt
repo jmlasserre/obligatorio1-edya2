@@ -1,18 +1,3 @@
-Comando_a_procesar:PUT
-Comando_procesado
-Comando_a_procesar:PUT
-Comando_procesado
-Comando_a_procesar:PUT
-Comando_procesado
-Comando_a_procesar:PUT
-Comando_procesado
-Comando_a_procesar:SIZE
-4
-Comando_procesado
-Comando_a_procesar:CLEAR_DOMAIN
-hola
-hola
-hola
-hola
-Comando_procesado
-Comando_a_procesar:LIST_DOMAIN
+/hola /o /images 
+0
+/test 
