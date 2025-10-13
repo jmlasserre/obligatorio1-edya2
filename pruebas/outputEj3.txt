@@ -2,3 +2,5 @@ ImagePage 3000
 HomePage 5000
 0
 2
+/images
+/home

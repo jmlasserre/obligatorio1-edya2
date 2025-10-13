@@ -26,19 +26,6 @@ public:
     }
 };
 
-class NodoDominio
-{
-public:
-    string dominio;
-    ListImp<int> indices;
-
-    NodoDominio(string dom) : dominio(dom), indices(ListImp<int>()) {}
-    bool operator==(const NodoDominio &otroNodo)
-    {
-        return this->dominio == otroNodo.dominio;
-    }
-};
-
 class NodoPosicion
 {
 public:
@@ -50,10 +37,33 @@ public:
         arrayPosicion[1] = index;
     }
 
+    int getUbicacionEnHash()
+    {
+        return arrayPosicion[0];
+    }
+
+    int getIndexEnBucket()
+    {
+        return arrayPosicion[1];
+    }
+
     // necesito overload del == para poder usar ListImp<NodoPosicion>
     bool operator==(const NodoPosicion &otroNodo)
     {
         return (this->arrayPosicion[0] == otroNodo.arrayPosicion[0] && this->arrayPosicion[1] == otroNodo.arrayPosicion[1]); // O(1)
+    }
+};
+
+class NodoDominio
+{
+public:
+    string dominio;
+    ListImp<NodoPosicion *> indices;
+
+    NodoDominio(string dom) : dominio(dom), indices(ListImp<NodoPosicion *>()) {}
+    bool operator==(const NodoDominio &otroNodo)
+    {
+        return this->dominio == otroNodo.dominio;
     }
 };
 
@@ -116,11 +126,11 @@ public:
         return cantidad;
     }
 
-    int insertarEnPaths(string dominio, string path, string titulo, int tiempo)
+    NodoPosicion *insertarEnPaths(string dominio, string path, string titulo, int tiempo)
     {
         float fc = (float)(cantidad + 1) / (float)largo;
         if (fc > 0.7)
-            return -1;
+            return nullptr;
         int pos = miHash1(dominio + path) % largo;
         if (!tabla[pos]) // nullptr
         {
@@ -128,7 +138,8 @@ public:
             tabla[pos] = new NodoHash(dominio, path, titulo, tiempo);
             tabla[pos]->bucket.insert(aAgregar);
             cantidad++;
-            return pos;
+            NodoPosicion *posicion = new NodoPosicion(pos, 0);
+            return posicion;
         }
         else if (tabla[pos]->libre) // nodo libre
         {
@@ -140,11 +151,14 @@ public:
             NodoRecurso *aAgregar = new NodoRecurso(dominio, path, titulo, tiempo);
             tabla[pos]->bucket.insert(aAgregar);
             cantidad++;
-            return pos;
+            NodoPosicion *posicion = new NodoPosicion(pos, 0);
+            return posicion;
         }
         else
         { // nodo ocupado, puede ser update
             int largo = tabla[pos]->bucket.getSize();
+            bool actualizo = false;
+            int indexActualizo = -1;
             for (int i = 0; i < largo; i++)
             {
                 NodoRecurso *rec = tabla[pos]->bucket.get(0);
@@ -152,15 +166,22 @@ public:
                 {
                     rec->tiempo = tiempo;
                     rec->titulo = titulo;
-                    return pos; // no aumento cantidad porque actualicé un nodo
+                    actualizo = true;
+                    indexActualizo = i;
                 }
                 tabla[pos]->bucket.removeAt(0); // O(1)
                 tabla[pos]->bucket.insert(rec); // O(1)
             }
+            if (actualizo)
+            {
+                NodoPosicion *posicion = new NodoPosicion(pos, indexActualizo);
+                return posicion; // no aumento cantidad porque actualicé un nodo
+            }
             NodoRecurso *aAgregar = new NodoRecurso(dominio, path, titulo, tiempo);
             tabla[pos]->bucket.insert(aAgregar);
             cantidad++;
-            return pos;
+            NodoPosicion *posicion = new NodoPosicion(pos, largo);
+            return posicion;
         }
     }
 
@@ -198,11 +219,9 @@ public:
         return false;
     }
 
-    void insertarDominio(string dominio, int index)
+    void insertarDominio(string dominio, NodoPosicion *index)
     {
         float fc = (float)(cantidad + 1) / (float)largo;
-        if (index == -1)
-            return;
         int pos = miHash1(dominio) % largo;
         if (!tabla[pos] && fc <= 0.7)
         {
@@ -233,24 +252,25 @@ public:
                     int largoDom = nodoAct->indices.getSize();
                     for (int i = 0; i < largoDom; i++)
                     {
-                        int currentIndex = nodoAct->indices.get(0);
+                        NodoPosicion *currentIndex = nodoAct->indices.get(0);
                         if (currentIndex == index)
                         {
                             actualizo = true;
-                            break;
                         }
                         nodoAct->indices.removeAt(0);
                         nodoAct->indices.insert(currentIndex);
                     }
                     // recorrí todos los índices del dominio y no encontré el que quiero insertar; debo insertarlo
+                    if (actualizo || fc > 0.7)
+                        return;
                     nodoAct->indices.insertAt(0, index);
-                    return;
+                    break;
                 }
                 tabla[pos]->indices.removeAt(0);
                 tabla[pos]->indices.insert(nodoAct);
             }
             // recorrí todos los dominios de esa ubicación y ninguno era el que buscaba: debo agregarlo
-            if (actualizo || fc > 0.7)
+            if (fc > 0.7)
                 return;
             NodoDominio *dom = new NodoDominio(dominio);
             dom->indices.insert(index);
@@ -282,28 +302,38 @@ public:
         cout << "recurso_no_encontrado" << endl;
     }
 
-    ListImp<int>* getRecursosByDominio(string dominio){
-        int pos = miHash1(dominio)%largo;
-        if (!tabla[pos] || tabla[pos]->libre) return nullptr;
+    ListImp<NodoPosicion *> *getRecursosByDominio(string dominio)
+    {
+        int pos = miHash1(dominio) % largo;
+        if (!tabla[pos] || tabla[pos]->libre)
+            return nullptr;
         int largo = tabla[pos]->indices.getSize();
-        for (int i = 0; i < largo; i++){
-            NodoDominio* dom = tabla[pos]->indices.get(0);
-            if (dom->dominio == dominio) return &dom->indices;
+        for (int i = 0; i < largo; i++)
+        {
+            NodoDominio *dom = tabla[pos]->indices.get(0);
+            if (dom->dominio == dominio)
+                return &dom->indices;
             tabla[pos]->indices.removeAt(0);
             tabla[pos]->indices.insert(dom);
         }
         return nullptr;
     }
 
-    void listarPaths (ListImp<int>*& lista, string dominio){
+    void listarPaths(ListImp<NodoPosicion*> *&lista, string dominio)
+    {
         int largoRecs = lista->getSize();
-        for (int i = 0; i < largoRecs; i++){
-            int index = lista->get(0);
-            ListImp<NodoRecurso*> listaRecs = tabla[index]->bucket;
+        for (int i = 0; i < largoRecs; i++)
+        {
+            NodoPosicion* index = lista->get(0);
+            ListImp<NodoRecurso *> listaRecs = tabla[index->getUbicacionEnHash()]->bucket;
             int largoListaRecs = listaRecs.getSize();
-            for (int j = 0; j < largoListaRecs; j++){
-                NodoRecurso* currentIndex = listaRecs.get(0);
+            for (int j = 0; j < index->getIndexEnBucket(); j++)
+            {
+                NodoRecurso *currentIndex = listaRecs.get(0);
+                listaRecs.removeAt(0);
+                listaRecs.insert(currentIndex);
             }
+            cout << listaRecs.get(0)->path << endl;
             lista->removeAt(0);
             lista->insert(index);
         }
@@ -343,8 +373,9 @@ public:
 
     void PUT(string dominio, string path, string titulo, int tiempo)
     {
-        int index = dominio_path->insertarEnPaths(dominio, path, titulo, tiempo);
-        dominios->insertarDominio(dominio, index);
+        NodoPosicion *index = dominio_path->insertarEnPaths(dominio, path, titulo, tiempo);
+        if (index)
+            dominios->insertarDominio(dominio, index);
     }
     void GET(string dominio, string path)
     {
@@ -366,6 +397,8 @@ public:
     }
     void LIST_DOMAIN(string dominio)
     {
+        ListImp<NodoPosicion*>* recs = dominios->getRecursosByDominio(dominio);
+        if (recs) dominio_path->listarPaths(recs, dominio);
     }
     void CLEAR_DOMAIN(string dominio)
     {
