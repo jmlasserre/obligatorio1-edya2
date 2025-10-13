@@ -42,20 +42,19 @@ public:
     {
         this->largo = largo;
         cantidad = 0;
-        fc = 0;
         tabla = new NodoHash *[largo];
         for (int i = 0; i < largo; i++)
             tabla[i] = nullptr;
     }
 
-    void clear()
+    /*void clear()
     {
         for (int i = 0; i < largo; i++)
         {
             delete tabla[i];
             tabla[i] = NULL;
         }
-    }
+    }*/
 
     int cantElementos()
     {
@@ -65,10 +64,6 @@ public:
     int getLargo()
     {
         return largo;
-    }
-
-    void insertar(string dominio, string path, string titulo, int tiempo)
-    {
     }
 
     void mostrarPaths(ListImp<int> *&lista)
@@ -145,8 +140,6 @@ public:
     int insertarEnPaths(string dominio, string path, string titulo, int tiempo)
     {
         float fc = (float)(cantidad + 1) / (float)largo;
-        if (fc > 0.7)
-            return -1;
         int intentos = 0;
         int pos = miHash1(dominio + path) % largo;
         while (tabla[pos] && intentos <= largo)
@@ -162,21 +155,24 @@ public:
             }
             pos = (miHash1(dominio + path) + (++intentos) * ((miHash2(dominio + path) % (largo - 1)) + 1)) % largo;
         }
-        if (!tabla[pos])
+        if (fc <= 0.7)
         {
-            tabla[pos] = new NodoHash(dominio, path, titulo, tiempo);
-            cantidad++;
-            return pos;
-        }
-        else if (tabla[pos]->libre)
-        {
-            tabla[pos]->dominio = dominio;
-            tabla[pos]->path = path;
-            tabla[pos]->titulo = titulo;
-            tabla[pos]->tiempo = tiempo;
-            tabla[pos]->libre = false;
-            cantidad++;
-            return pos;
+            if (!tabla[pos])
+            {
+                tabla[pos] = new NodoHash(dominio, path, titulo, tiempo);
+                cantidad++;
+                return pos;
+            }
+            else if (tabla[pos]->libre)
+            {
+                tabla[pos]->dominio = dominio;
+                tabla[pos]->path = path;
+                tabla[pos]->titulo = titulo;
+                tabla[pos]->tiempo = tiempo;
+                tabla[pos]->libre = false;
+                cantidad++;
+                return pos;
+            }
         }
         else
             return -1;
@@ -191,7 +187,8 @@ public:
 
     string getDominioAt(int index)
     {
-        if (tabla[index] && !tabla[index]->libre) return tabla[index]->dominio;
+        if (tabla[index] && !tabla[index]->libre)
+            return tabla[index]->dominio;
         return "";
     }
 
@@ -263,25 +260,7 @@ private:
     NodoHash **tabla;
     int cantidad;
     int largo;
-    float fc;
 
-    unsigned prevPrime(unsigned n)
-    {
-        if (n <= 2)
-            return 2;
-        while (true)
-        {
-            bool isPrime = true;
-            for (int i = 2; i < n && isPrime && i * i <= n; i++)
-            {
-                if (n % i == 0)
-                    isPrime = false;
-            }
-            if (isPrime)
-                return n;
-            n--;
-        }
-    }
     // Adaptado de: https://cp-algorithms.com/string/string-hashing.html (polynomial rolling hash function)
     unsigned int miHash1(string key)
     {
@@ -297,6 +276,7 @@ private:
         return hash_value;
     }
 
+    // Adaptado de: https://helloacm.com/the-simplest-string-hash-function-djb2-algorithm-and-implementations/ (Algoritmo djb2, por Dan Bernstein)
     unsigned int miHash2(string key)
     {
         unsigned int hash = 5381;
@@ -310,9 +290,7 @@ private:
 
 class Cache
 {
-private:
 public:
-    int largo;
     TablaHash *dominio_path;
     TablaHash *dominios;
 
@@ -336,9 +314,8 @@ public:
 
     Cache(int n)
     {
-        largo = n;
-        dominio_path = new TablaHash(nextPrime(largo * 2));
-        dominios = new TablaHash(nextPrime(largo * 2));
+        dominio_path = new TablaHash(nextPrime(n * 2));
+        dominios = new TablaHash(nextPrime(n * 2));
     }
 
     void PUT(string dominio, string path, string titulo, int tiempo)
@@ -452,7 +429,7 @@ int main()
     for (int i = 0; i < N; i++)
     {
         cin >> command;
-        //cout << "Ejecutando comando " << command << ", num " << i + 2 << ": ";
+        // cout << "Ejecutando comando " << command << ", num " << i + 2 << ": ";
         if (command == "PUT")
         {
             string dominio, path, titulo;
@@ -508,7 +485,7 @@ int main()
         {
             cout << "Comando_inválido" << endl;
         }
-        //cout << endl;
+        // cout << endl;
     }
     return 0;
 }

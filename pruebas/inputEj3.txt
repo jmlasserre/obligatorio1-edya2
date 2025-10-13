@@ -1,0 +1,8 @@
+7
+PUT google.com /images ImagePage 3000
+PUT google.com /home HomePage 5000
+PUT twitter.com /dev DevSite 5000
+GET google.com /images
+GET google.com /home
+COUNT_DOMAIN netflix.com
+COUNT_DOMAIN google.com
