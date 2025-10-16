@@ -143,7 +143,7 @@ public:
 int main()
 {
 
-    int k;
+    int k; // cantidad de listas
     cin >> k;
 
     int **listas = new int *[k];
@@ -151,14 +151,14 @@ int main()
 
     for (int i = 0; i < k; i++)
     {
-        int Ni;
+        int Ni; // largo de la lista
         cin >> Ni;
         tamanos[i] = Ni;
         listas[i] = new int[Ni];
 
         for (int j = 0; j < Ni; j++)
         {
-            cin >> listas[i][j];
+            cin >> listas[i][j]; // primer elemento de la lista
         }
     }
 
@@ -174,7 +174,7 @@ int main()
     {
         if (tamanos[i] > 0)
         {
-            heap.insertar(listas[i][0], i);
+            heap.insertar(listas[i][0], i); // inserta el primer elemento de cada lista (que lo tenemos guardao)
             indices[i] = 1;
         }
     }
@@ -184,10 +184,10 @@ int main()
         int valor = heap.valorTope();
         int listaActual = heap.listaOrigenTope();
 
-        cout << valor << endl;
+        cout << valor << endl; // imprimo el valor y lo elimino del heap.
         heap.eliminarTope();
 
-        if (indices[listaActual] < tamanos[listaActual])
+        if (indices[listaActual] < tamanos[listaActual]) // si siguen habiendo elementos los agrego al heap
         {
             heap.insertar(listas[listaActual][indices[listaActual]], listaActual);
             indices[listaActual]++;
