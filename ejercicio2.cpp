@@ -14,29 +14,53 @@
 #include "tads/ListImp.cpp"
 using namespace std;
 
-// voy a hacer lo más sencillo que pueda. dos tablas, una dominio, otra dominio+path. guardo punteros a la otra tabla en la de dominio. a la mierda todo.
-
-class NodoHash
+struct NodoHash
 {
-public:
-    NodoHash()
-    {
-        dominio = path = titulo = "";
-        tiempo = 0;
-        libre = true;
-    }
-
-    NodoHash(string dominio, string path, string titulo, int tiempo) : dominio(dominio), path(path), titulo(titulo), tiempo(tiempo), libre(false), indices(ListImp<int>()) {}
     ListImp<int> indices;
-    string dominio;
-    string path;
-    string titulo;
+    std::string dominio;
+    std::string path;
+    std::string titulo;
     int tiempo;
     bool libre;
+
+    NodoHash() : indices(), dominio(""), path(""), titulo(""), tiempo(0), libre(true) {}
+
+    NodoHash(string dominio, string path, string titulo, int tiempo) : dominio(dominio), path(path), titulo(titulo), tiempo(tiempo) {}
 };
 
 class TablaHash
 {
+private:
+    NodoHash **tabla;
+    int cantidad;
+    int largo;
+
+    // Adaptado de: https://cp-algorithms.com/string/string-hashing.html (polynomial rolling hash function)
+    unsigned int miHash1(string key)
+    {
+        int p = 31;
+        unsigned int hash_value = 0;
+        unsigned int p_pow = 1;
+        int m = 1e9 + 9;
+        for (char c : key)
+        {
+            hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
+            p_pow = (p_pow * p) % m;
+        }
+        return hash_value;
+    }
+
+    // Adaptado de: https://helloacm.com/the-simplest-string-hash-function-djb2-algorithm-and-implementations/ (Algoritmo djb2, por Dan Bernstein)
+    unsigned int miHash2(string key)
+    {
+        unsigned int hash = 5381;
+        for (char c : key)
+        {
+            hash = ((hash << 5) + hash) + c;
+        }
+        return hash;
+    }
+
 public:
     TablaHash(int largo)
     {
@@ -255,45 +279,14 @@ public:
             pos = (miHash1(dominio) + (++intentos) * ((miHash2(dominio) % (largo - 1)) + 1)) % largo;
         }
     }
-
-private:
-    NodoHash **tabla;
-    int cantidad;
-    int largo;
-
-    // Adaptado de: https://cp-algorithms.com/string/string-hashing.html (polynomial rolling hash function)
-    unsigned int miHash1(string key)
-    {
-        int p = 31;
-        unsigned int hash_value = 0;
-        unsigned int p_pow = 1;
-        int m = 1e9 + 9;
-        for (char c : key)
-        {
-            hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
-            p_pow = (p_pow * p) % m;
-        }
-        return hash_value;
-    }
-
-    // Adaptado de: https://helloacm.com/the-simplest-string-hash-function-djb2-algorithm-and-implementations/ (Algoritmo djb2, por Dan Bernstein)
-    unsigned int miHash2(string key)
-    {
-        unsigned int hash = 5381;
-        for (char c : key)
-        {
-            hash = ((hash << 5) + hash) + c;
-        }
-        return hash;
-    }
 };
 
 class Cache
 {
-public:
+private:
     TablaHash *dominio_path;
     TablaHash *dominios;
-
+public:
     unsigned int nextPrime(unsigned int n)
     {
         if (n <= 1)

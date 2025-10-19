@@ -17,6 +17,7 @@ struct NodoAVL
     NodoAVL *der;
     int altura;
     int paramMain;
+    int tamSub;
     int paramSec;
     string nombre;
     int reps;
@@ -30,6 +31,7 @@ struct NodoAVL
         altura = 1;
         nombre = nombreJugador;
         reps = 0;
+        tamSub = 1;
     }
 };
 
@@ -37,6 +39,9 @@ class ArbolAVL
 {
 private:
     bool aceptaReps;
+
+    int tamanio(NodoAVL *n) { return n ? n->tamSub : 0; }
+
     int altura(NodoAVL *raiz)
     {
         if (!raiz)
@@ -54,6 +59,8 @@ private:
     // Adaptado de las slides del curso (https://avl.uruguayan.ninja/8)
     void rotarDerecha(NodoAVL *&raiz)
     {
+        assert(raiz != nullptr);
+        assert(raiz->izq != nullptr);
         NodoAVL *x = raiz->izq;
         NodoAVL *T2 = x->der;
 
@@ -65,11 +72,16 @@ private:
         raiz->altura = max(altura(raiz->izq), altura(raiz->der)) + 1;
         x->altura = max(altura(x->izq), altura(x->der)) + 1;
 
+        raiz->tamSub = tamanio(raiz->izq) + tamanio(raiz->der) + 1 + raiz->reps;
+        x->tamSub = tamanio(x->izq) + tamanio(x->der) + 1 + x->reps;
+
         raiz = x;
     }
     // Adaptado de las slides del curso (https://avl.uruguayan.ninja/8)
     void rotarIzquierda(NodoAVL *&raiz)
     {
+        assert(raiz != nullptr);
+        assert(raiz->der != nullptr);
         NodoAVL *y = raiz->der;
         NodoAVL *T2 = y->izq;
 
@@ -81,6 +93,9 @@ private:
         raiz->altura = max(altura(raiz->izq), altura(raiz->der)) + 1;
         y->altura = max(altura(y->izq), altura(y->der)) + 1;
 
+        raiz->tamSub = tamanio(raiz->izq) + tamanio(raiz->der) + 1 + raiz->reps;
+        y->tamSub = tamanio(y->izq) + tamanio(y->der) + 1 + y->reps;
+
         raiz = y;
     }
 
@@ -91,7 +106,7 @@ public:
     {
         cantidad = 0;
         raiz = NULL;
-        aceptaReps = aceptaReps;
+        this->aceptaReps = aceptaReps;
     }
     void encontrarJugador(NodoAVL *raiz, int id)
     {
@@ -132,32 +147,34 @@ public:
             if (aceptaReps)
             {
                 raiz->reps++;
+                raiz->tamSub++;
             }
             else
             {
                 return;
             }
         }
-        raiz->altura = 1 + max(altura(raiz->izq), altura(raiz->der));
+        raiz->altura = max(altura(raiz->izq), altura(raiz->der));
+        raiz->tamSub = tamanio(raiz->izq) + tamanio(raiz->der) + 1 + raiz->reps;
         int balance = obtenerBalance(raiz);
 
-        // Caso II
-        if (balance < -1 && raiz->izq && paramMainJugador < raiz->izq->paramMain)
+        // Left Left (LL)
+        if (balance > 1 && raiz->izq && paramMainJugador < raiz->izq->paramMain)
             rotarDerecha(raiz);
 
-        // Caso DD
-        if (balance > 1 && raiz->der && paramMainJugador > raiz->der->paramMain)
+        // Right Right (RR)
+        if (balance < -1 && raiz->der && paramMainJugador > raiz->der->paramMain)
             rotarIzquierda(raiz);
 
-        // Caso ID
-        if (balance < -1 && raiz->izq && paramMainJugador > raiz->izq->paramMain)
+        // Left Right (LR)
+        if (balance > 1 && raiz->izq && paramMainJugador > raiz->izq->paramMain)
         {
             rotarIzquierda(raiz->izq);
             rotarDerecha(raiz);
         }
 
-        // Caso DI
-        if (balance > 1 && raiz->der && paramMainJugador < raiz->der->paramMain)
+        // Right Left (RL)
+        if (balance < -1 && raiz->der && paramMainJugador < raiz->der->paramMain)
         {
             rotarDerecha(raiz->der);
             rotarIzquierda(raiz);
@@ -177,10 +194,13 @@ private:
     {
         if (!r)
             return 0;
-        if (r->paramMain >= puntaje)
-            return 1 + r->reps + puntajeSuperiorA(r->izq, puntaje) + puntajeSuperiorA(r->der, puntaje);
-        else
+        if (r->paramMain > puntaje){
+            return (r->der ? r->der->tamSub : 0) + 1 + r->reps + puntajeSuperiorA(r->izq, puntaje);
+        } else if (r->paramMain < puntaje){
             return puntajeSuperiorA(r->der, puntaje);
+        } else {
+            return (r->der ? r->der->tamSub : 0) + 1 + r->reps;
+        }
     }
 
 public:
