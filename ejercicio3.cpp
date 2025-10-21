@@ -319,12 +319,12 @@ public:
         return nullptr;
     }
 
-    void listarPaths(ListImp<NodoPosicion*> *&lista, string dominio)
+    void listarPaths(ListImp<NodoPosicion *> *&lista, string dominio)
     {
         int largoRecs = lista->getSize();
         for (int i = 0; i < largoRecs; i++)
         {
-            NodoPosicion* index = lista->get(0);
+            NodoPosicion *index = lista->get(0);
             ListImp<NodoRecurso *> listaRecs = tabla[index->getUbicacionEnHash()]->bucket;
             int largoListaRecs = listaRecs.getSize();
             for (int j = 0; j < index->getIndexEnBucket(); j++)
@@ -338,15 +338,63 @@ public:
             lista->insert(index);
         }
     }
+
+    NodoPosicion* eliminarEnPaths(string dominio, string path)
+    {
+        int pos = miHash1(dominio + path) % largo;
+        if (!tabla[pos] || tabla[pos]->libre) return nullptr;
+        int largo = tabla[pos]->bucket.getSize();
+        for (int i = 0; i < largo; i++)
+        {
+            NodoRecurso *rec = tabla[pos]->bucket.get(0);
+            if (rec->dominio == dominio && rec->path == path)
+                return new NodoPosicion(pos, i);
+            tabla[pos]->bucket.removeAt(0);
+            tabla[pos]->bucket.insert(rec);
+        }
+        return nullptr;
+    }
+
+    void eliminarEnDominio(string dominio, string path, NodoPosicion* index)
+    {
+        int pos = miHash1(dominio) % largo;
+        if (!tabla[pos] || tabla[pos]->libre)
+            return;
+        int largo = tabla[pos]->indices.getSize(); // esta es la cantidad de dominios en el bucket
+        for (int i = 0; i < largo; i++)
+        {
+            NodoDominio *nodoAct = tabla[pos]->indices.get(0);
+            if (nodoAct->dominio == dominio)
+            {
+                int largoDom = nodoAct->indices.getSize();
+                for (int i = 0; i < largoDom; i++)
+                {
+                    NodoPosicion *currentIndex = nodoAct->indices.get(0);
+                    if (currentIndex == index)
+                    {
+                        nodoAct->indices.removeAt(0);
+                        return;
+                    }
+                    nodoAct->indices.removeAt(0);
+                    nodoAct->indices.insert(currentIndex);
+                }
+                nodoAct->indices.insertAt(0, index);
+                break;
+            }
+            tabla[pos]->indices.removeAt(0);
+            tabla[pos]->indices.insert(nodoAct);
+        }
+    }
 };
 
 // Declaración de la clase Cache (mismos atributos, métodos vacíos)
 class Cache
 {
-public:
+private:
     TablaHash *dominio_path;
     TablaHash *dominios;
 
+public:
     unsigned int nextPrime(unsigned int n)
     {
         if (n <= 1)
@@ -383,6 +431,12 @@ public:
     }
     void REMOVE(string dominio, string path)
     {
+        int cantActual = dominio_path->cantidadElementos();
+        NodoPosicion* indexABorrar = dominio_path->eliminarEnPaths(dominio, path);
+        if (indexABorrar != nullptr)
+        {
+            dominios->eliminarEnDominio(dominio, path, indexABorrar);
+        }
     }
     void CONTAINS(string dominio, string path)
     {
@@ -397,8 +451,9 @@ public:
     }
     void LIST_DOMAIN(string dominio)
     {
-        ListImp<NodoPosicion*>* recs = dominios->getRecursosByDominio(dominio);
-        if (recs) dominio_path->listarPaths(recs, dominio);
+        ListImp<NodoPosicion *> *recs = dominios->getRecursosByDominio(dominio);
+        if (recs)
+            dominio_path->listarPaths(recs, dominio);
     }
     void CLEAR_DOMAIN(string dominio)
     {
