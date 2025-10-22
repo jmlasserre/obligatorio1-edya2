@@ -1,15 +1,20 @@
-14
+19
 PUT google.com /images ImagePage 3000
 PUT google.com /home HomePage 5000
 PUT twitter.com /dev DevSite 5000
-CLEAR_DOMAIN google.com
-COUNT_DOMAIN google.com
 GET google.com /images
 GET google.com /home
-CLEAR_DOMAIN twitch.com
+GET twitch.com /asd
+GET twitter.com /dev
 SIZE
-LIST_DOMAIN twitter.com
-CLEAR_DOMAIN twitter.com
+PUT google.com /images NuevaPagLol 69420
+GET google.com /images
+SIZE
+CONTAINS twitter.com /dev
+CONTAINS goog.com /derp
+COUNT_DOMAIN google.com
+COUNT_DOMAIN fd.com
+COUNT_DOMAIN twitter.com
 LIST_DOMAIN twitter.com
 LIST_DOMAIN google.com
-SIZE
+LIST_DOMAIN a.com

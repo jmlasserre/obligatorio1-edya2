@@ -1,54 +1,15 @@
-
-true
-true
-true
-AboutPage 972405853
-/api 
-/api 
+ImagePage 3000
+HomePage 5000
 recurso_no_encontrado
-AdminPage 143655838
-SettingsPage 322972791
-/api 
-1
-false
-true
-true
-APIPage 892864901
-/api 
-false
-recurso_no_encontrado
-/ /api 
-false
-true
-/news 
-1
-false
-DownloadPage 308140970
-Dashboard 956395392
-true
-Billing 756750611
-Billing 756750611
-1
-2
-AboutPage 646867589
-false
-Billing 756750611
-APIPage 240283320
-false
-true
-recurso_no_encontrado
-NewsPage 268694426
-true
-Billing 756750611
-APIPage 240283320
-Support 419556175
-APIPage 368409075
-/download /search 
-recurso_no_encontrado
-Billing 756750611
-/home /docs 
+DevSite 5000
 3
-recurso_no_encontrado
+NuevaPagLol 69420
+3
 true
+false
+2
 0
-recurso_no_encontrado
+1
+/dev 
+/home /images 
+
