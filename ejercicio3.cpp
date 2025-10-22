@@ -82,8 +82,10 @@ public:
         return this->nombre == otroNodo.nombre;
     }
 
-    void listarRecursos(){
-        for (int i = 0; i < cant; i++){
+    void listarRecursos()
+    {
+        for (int i = 0; i < cant; i++)
+        {
             NodoHash rec = recursos.get(0);
             cout << rec.getPath() << " ";
             recursos.removeAt(0);
@@ -92,6 +94,18 @@ public:
         cout << endl;
     }
 
+    ListImp<string> obtenerPaths()
+    {
+        ListImp<string> listaPaths;
+        for (int i = 0; i < cant; i++)
+        {
+            NodoHash rec = recursos.get(0);
+            listaPaths.insert(rec.getPath());
+            recursos.removeAt(0);
+            recursos.insert(rec);
+        }
+        return listaPaths;
+    }
 };
 
 class TablaHash
@@ -221,37 +235,45 @@ public:
             NodoHash nodo = bucket->get(0);
             if (nodo.getDominio() == dominio && nodo.getPath() == path)
             {
-                if (print) cout << nodo.getTitulo() << " " << nodo.getTiempo() << endl;
+                if (print)
+                    cout << nodo.getTitulo() << " " << nodo.getTiempo() << endl;
                 return true;
             }
             bucket->removeAt(0);
             bucket->insert(nodo);
         }
-        if (print) cout << "recurso_no_encontrado" << endl;
+        if (print)
+            cout << "recurso_no_encontrado" << endl;
         return false;
     }
-    
+
     // para dominios
-    int cantDominio(string dominio){
-        int pos = miHash1(dominio)%largo;
-        ListImp<NodoDominio>* bucket = tablaDominios[pos];
+    int cantDominio(string dominio)
+    {
+        int pos = miHash1(dominio) % largo;
+        ListImp<NodoDominio> *bucket = tablaDominios[pos];
         int bucketSize = bucket->getSize();
-        for (int i = 0; i < bucketSize; i++){
+        for (int i = 0; i < bucketSize; i++)
+        {
             NodoDominio dom = bucket->get(0);
-            if (dom.getNombre() == dominio) return dom.getCant();
+            if (dom.getNombre() == dominio)
+                return dom.getCant();
             bucket->removeAt(0);
             bucket->insert(dom);
         }
         return 0;
     }
 
-    void listarRecursos(string dominio){
-        int pos = miHash1(dominio)%largo;
-        ListImp<NodoDominio>* bucket = tablaDominios[pos];
+    void listarRecursos(string dominio)
+    {
+        int pos = miHash1(dominio) % largo;
+        ListImp<NodoDominio> *bucket = tablaDominios[pos];
         int bucketSize = bucket->getSize();
-        for (int i = 0; i < bucketSize; i++){
+        for (int i = 0; i < bucketSize; i++)
+        {
             NodoDominio dom = bucket->get(0);
-            if (dom.getNombre() == dominio){
+            if (dom.getNombre() == dominio)
+            {
                 dom.listarRecursos();
                 return;
             }
@@ -262,19 +284,75 @@ public:
     }
 
     // para uso en dominio_path
-    bool eliminarEnPaths(string dominio, string path){
-        int pos = miHash1(dominio+path)%largo;
-        ListImp<NodoHash>* bucket = tabla[pos];
+    bool eliminarEnPaths(string dominio, string path) // mirar no se si esta bien.
+    {
+        int pos = miHash1(dominio + path) % largo;
+        ListImp<NodoHash> *bucket = tabla[pos];
         int bucketSize = bucket->getSize();
-        for (int i = 0; i < bucketSize; i++){
+
+        for (int i = 0; i < bucketSize; i++)
+        {
             NodoHash nodo = bucket->get(0);
-            if (nodo.getDominio() == dominio && nodo.getPath() == path) 
+            if (nodo.getDominio() == dominio && nodo.getPath() == path)
+            {
+                bucket->removeAt(0);
+                cantidad--;
+                actualizarFc();
+                return true;
+            }
             bucket->removeAt(0);
             bucket->insert(nodo);
-            // queda pendiente terminar...
         }
+        return false;
     }
 
+    ListImp<string> obtenerPathsDeDominio(string dominio)
+    {
+        int pos = miHash1(dominio) % largo;
+        ListImp<NodoDominio> *bucket = tablaDominios[pos];
+        int bucketSize = bucket->getSize();
+
+        for (int i = 0; i < bucketSize; i++)
+        {
+            NodoDominio dom = bucket->get(0);
+            if (dom.getNombre() == dominio)
+            {
+                ListImp<string> paths = dom.obtenerPaths();
+                bucket->removeAt(0);
+                bucket->insert(dom);
+                return paths; // retorna la lista de paths de ese dominio.
+            }
+            bucket->removeAt(0);
+            bucket->insert(dom);
+        }
+        return ListImp<string>(); // Si no tiene nada retorna lista vacia
+    }
+
+    bool eliminarEnDominios(string dominio)
+    {
+        int pos = miHash1(dominio) % largo;
+        ListImp<NodoDominio> *bucket = tablaDominios[pos];
+        int bucketSize = bucket->getSize();
+        bool eliminoAlguno = false;
+
+        for (int i = 0; i < bucketSize; i++)
+        {
+            NodoDominio dom = bucket->get(0);
+            if (dom.getNombre() == dominio)
+            {
+                bucket->removeAt(0);
+                eliminoAlguno = true;
+                cantidad--;
+            }
+            else
+            {
+                bucket->removeAt(0);
+                bucket->insert(dom);
+            }
+        }
+        if(eliminoAlguno) actualizarFc();
+        return eliminoAlguno;
+    }
 };
 
 // Declaración de la clase Cache (mismos atributos, métodos vacíos)
@@ -326,8 +404,10 @@ public:
     void CONTAINS(string dominio, string path)
     {
         bool contains = dominio_path->get(dominio, path, false);
-        if (contains) cout << "true" << endl;
-        else cout << "false" << endl;
+        if (contains)
+            cout << "true" << endl;
+        else
+            cout << "false" << endl;
     }
     void COUNT_DOMAIN(string dominio)
     {
@@ -339,7 +419,23 @@ public:
     }
     void CLEAR_DOMAIN(string dominio)
     {
-        // TODO
+        ListImp<string> paths = dominios->obtenerPathsDeDominio(dominio);
+
+        int cantidadPaths = 0;
+        ListImp<string> aux = paths;
+        while(aux.getSize() > 0){
+            string p = aux.get(0);
+            aux.removeAt(0);
+            cantidadPaths++;
+        }
+
+        for(int i = 0; i < cantidadPaths; i++){
+            string path = paths.get(0);
+            dominio_path->eliminarEnPaths(dominio, path);
+            paths.remove(0);
+            paths.insert(path);
+        }
+        dominios->eliminarEnDominios(dominio);
     }
     void SIZE()
     {
