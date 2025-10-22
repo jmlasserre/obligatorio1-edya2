@@ -286,6 +286,7 @@ class Cache
 private:
     TablaHash *dominio_path;
     TablaHash *dominios;
+
 public:
     unsigned int nextPrime(unsigned int n)
     {
@@ -404,9 +405,9 @@ public:
         int largo = dominios->getLargo();
         for (int i = 0; i < largo; i++)
         {
-            if (dominios->getDominioAt(i) != "")
+            string dominioABorrar = dominios->getDominioAt(i);
+            if (dominioABorrar != "")
             {
-                string dominioABorrar = dominios->getDominioAt(i);
                 CLEAR_DOMAIN(dominioABorrar);
             }
         }

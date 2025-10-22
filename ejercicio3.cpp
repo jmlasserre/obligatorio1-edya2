@@ -28,9 +28,10 @@ public:
 
 class NodoPosicion
 {
-public:
+private:
     int arrayPosicion[2];
 
+public:
     NodoPosicion(int ubicacionEnHash, int index)
     {
         arrayPosicion[0] = ubicacionEnHash;
@@ -41,6 +42,10 @@ public:
     {
         return arrayPosicion[0];
     }
+
+    void setUbicacion(int ubic) { arrayPosicion[0] = ubic; }
+
+    void setIndex(int ind) { arrayPosicion[1] = ind; }
 
     int getIndexEnBucket()
     {
@@ -88,7 +93,6 @@ public:
     bool libre;
 };
 
-// Forward declaration to allow pointer members
 class TablaHash
 {
 private:
@@ -253,7 +257,7 @@ public:
                     for (int i = 0; i < largoDom; i++)
                     {
                         NodoPosicion *currentIndex = nodoAct->indices.get(0);
-                        if (currentIndex == index)
+                        if (index && currentIndex && index->getIndexEnBucket() == currentIndex->getIndexEnBucket() && index->getUbicacionEnHash() == currentIndex->getUbicacionEnHash())
                         {
                             actualizo = true;
                         }
@@ -261,9 +265,10 @@ public:
                         nodoAct->indices.insert(currentIndex);
                     }
                     // recorrí todos los índices del dominio y no encontré el que quiero insertar; debo insertarlo
-                    if (actualizo || fc > 0.7)
+                    if (actualizo)
                         return;
-                    nodoAct->indices.insertAt(0, index);
+                    if (nodoAct->indices.getSize() == 0) nodoAct->indices.insert(index);
+                    else nodoAct->indices.insertAt(0, index);
                     break;
                 }
                 tabla[pos]->indices.removeAt(0);
@@ -327,35 +332,55 @@ public:
             NodoPosicion *index = lista->get(0);
             ListImp<NodoRecurso *> listaRecs = tabla[index->getUbicacionEnHash()]->bucket;
             int largoListaRecs = listaRecs.getSize();
-            for (int j = 0; j < index->getIndexEnBucket(); j++)
+            for (int j = 0; j < largoListaRecs; j++)
             {
                 NodoRecurso *currentIndex = listaRecs.get(0);
+                if (j == index->getIndexEnBucket())
+                {
+                    cout << listaRecs.get(0)->path << " ";
+                    lista->removeAt(0);
+                    lista->insert(index);
+                }
                 listaRecs.removeAt(0);
                 listaRecs.insert(currentIndex);
             }
-            cout << listaRecs.get(0)->path << endl;
-            lista->removeAt(0);
-            lista->insert(index);
         }
+        cout << endl;
     }
 
-    NodoPosicion* eliminarEnPaths(string dominio, string path)
+    NodoPosicion *eliminarEnPaths(string dominio, string path)
     {
         int pos = miHash1(dominio + path) % largo;
-        if (!tabla[pos] || tabla[pos]->libre) return nullptr;
+        if (!tabla[pos] || tabla[pos]->libre)
+            return nullptr;
         int largo = tabla[pos]->bucket.getSize();
         for (int i = 0; i < largo; i++)
         {
             NodoRecurso *rec = tabla[pos]->bucket.get(0);
             if (rec->dominio == dominio && rec->path == path)
+            {
+                // eliminar el recurso del bucket y liberar memoria
+                tabla[pos]->bucket.removeAt(0);
+                delete rec;
+                cantidad--;
+                // si ya no hay recursos en el bucket, marcar la casilla como libre
+                if (tabla[pos]->bucket.getSize() == 0)
+                {
+                    tabla[pos]->libre = true;
+                    tabla[pos]->dominio = "";
+                    tabla[pos]->path = "";
+                    tabla[pos]->titulo = "";
+                    tabla[pos]->tiempo = 0;
+                }
                 return new NodoPosicion(pos, i);
+            }
             tabla[pos]->bucket.removeAt(0);
             tabla[pos]->bucket.insert(rec);
         }
         return nullptr;
     }
 
-    void eliminarEnDominio(string dominio, string path, NodoPosicion* index)
+    void eliminarEnDominio(string dominio, string path, NodoPosicion *index)
     {
         int pos = miHash1(dominio) % largo;
         if (!tabla[pos] || tabla[pos]->libre)
@@ -367,23 +392,65 @@ public:
             if (nodoAct->dominio == dominio)
             {
                 int largoDom = nodoAct->indices.getSize();
-                for (int i = 0; i < largoDom; i++)
+                bool borre = false;
+                ListImp<NodoPosicion *> temp;
+                for (int k = 0; k < largoDom; k++)
                 {
                     NodoPosicion *currentIndex = nodoAct->indices.get(0);
-                    if (currentIndex == index)
-                    {
-                        nodoAct->indices.removeAt(0);
-                        return;
-                    }
                     nodoAct->indices.removeAt(0);
-                    nodoAct->indices.insert(currentIndex);
+                    // si coincide con el índice a borrar, liberamos y marcamos borrado
+                    if (index && currentIndex &&
+                        index->getUbicacionEnHash() == currentIndex->getUbicacionEnHash() &&
+                        index->getIndexEnBucket() == currentIndex->getIndexEnBucket())
+                    {
+                        delete currentIndex;
+                        borre = true;
+                        continue;
+                    }
+                    // si el recurso está en el mismo bucket y su índice es mayor al borrado, decrementar su índice
+                    if (index && currentIndex &&
+                        index->getUbicacionEnHash() == currentIndex->getUbicacionEnHash() &&
+                        currentIndex->getIndexEnBucket() > index->getIndexEnBucket())
+                    {
+                        currentIndex->setIndex(currentIndex->getIndexEnBucket() - 1);
+                    }
+                    temp.insert(currentIndex); // conservar el resto
                 }
-                nodoAct->indices.insertAt(0, index);
-                break;
+                // volver a insertar los elementos en nodoAct en el mismo orden
+                while (!temp.isEmpty())
+                {
+                    NodoPosicion *rp = temp.get(0);
+                    temp.removeAt(0);
+                    nodoAct->indices.insert(rp);
+                }
+                if (borre)
+                {
+                    if (nodoAct->indices.getSize() == 0)
+                    {
+                        tabla[pos]->indices.removeAt(0);
+                        delete nodoAct;
+                        cantidad--;
+                    }
+                    return;
+                }
+                else
+                    return;
             }
             tabla[pos]->indices.removeAt(0);
             tabla[pos]->indices.insert(nodoAct);
         }
+    }
+
+    string getPathAt(int ubicacionEnHash, int indexEnBucket)
+    {
+        return tabla[ubicacionEnHash]->bucket.get(indexEnBucket)->path;
+    }
+
+    string getDominioAt(int pos)
+    {
+        if (!tabla[pos] || tabla[pos]->libre)
+            return "";
+        return tabla[pos]->dominio;
     }
 };
 
@@ -432,10 +499,11 @@ public:
     void REMOVE(string dominio, string path)
     {
         int cantActual = dominio_path->cantidadElementos();
-        NodoPosicion* indexABorrar = dominio_path->eliminarEnPaths(dominio, path);
+        NodoPosicion *indexABorrar = dominio_path->eliminarEnPaths(dominio, path);
         if (indexABorrar != nullptr)
         {
             dominios->eliminarEnDominio(dominio, path, indexABorrar);
+            delete indexABorrar;
         }
     }
     void CONTAINS(string dominio, string path)
@@ -454,9 +522,22 @@ public:
         ListImp<NodoPosicion *> *recs = dominios->getRecursosByDominio(dominio);
         if (recs)
             dominio_path->listarPaths(recs, dominio);
+        else
+            cout << endl;
     }
     void CLEAR_DOMAIN(string dominio)
     {
+        ListImp<NodoPosicion *> *listaRecs = dominios->getRecursosByDominio(dominio);
+        if (!listaRecs || listaRecs->getSize() == 0)
+            return;
+        while (!listaRecs->isEmpty())
+        {
+            NodoPosicion *pos = listaRecs->get(0);
+            listaRecs->removeAt(0);
+            string path = dominio_path->getPathAt(pos->getUbicacionEnHash(), pos->getIndexEnBucket());
+            NodoPosicion *nodoPos = dominio_path->eliminarEnPaths(dominio, path);
+            dominios->eliminarEnDominio(dominio, path, pos);
+        }
     }
     void SIZE()
     {
@@ -464,6 +545,15 @@ public:
     }
     void CLEAR()
     {
+        int largo = dominios->cantidadElementos();
+        for (int i = 0; i < largo; i++)
+        {
+            string dom = dominios->getDominioAt(i);
+            if (dom != "")
+            {
+                CLEAR_DOMAIN(dom);
+            }
+        }
     }
 };
 
@@ -476,7 +566,7 @@ int main()
     for (int i = 0; i < N; i++)
     {
         cin >> command;
-        // cout << "Ejecutando comando " << command << ", num " << i + 2 << ": ";
+        //cout << "Ejecutando comando " << command << ", num " << i + 2 << ": ";
         if (command == "PUT")
         {
             string dominio, path, titulo;
@@ -532,7 +622,7 @@ int main()
         {
             cout << "Comando_inválido" << endl;
         }
-        // cout << endl;
+        //cout << endl;
     }
     return 0;
 }

@@ -1,0 +1,101 @@
+100
+PUT slack.com /api AboutPage 972405853
+LIST_DOMAIN apple.com
+CONTAINS slack.com /api
+CONTAINS slack.com /api
+CONTAINS slack.com /api
+GET slack.com /api
+LIST_DOMAIN slack.com
+LIST_DOMAIN slack.com
+PUT wikipedia.org /home HomePage 199053771
+PUT netflix.com /help AdminPage 143655838
+GET wikipedia.org /settings
+PUT reddit.com /feed APIPage 892864901
+PUT discord.com /docs SettingsPage 322972791
+PUT spotify.com /contact HelpPage 829382387
+GET netflix.com /help
+GET discord.com /docs
+PUT github.com /api DownloadPage 520641962
+PUT netflix.com /news VideosPage 774211893
+CLEAR_DOMAIN netflix.com
+PUT microsoft.com /news VideosPage 190754965
+LIST_DOMAIN github.com
+PUT netflix.com /search Dashboard 17965445
+PUT stackoverflow.com /search HomePage 576536691
+COUNT_DOMAIN microsoft.com
+CONTAINS stackoverflow.com /contact
+PUT spotify.com /help Support 37256871
+PUT linkedin.com /api Dashboard 622161727
+CONTAINS discord.com /docs
+CONTAINS slack.com /api
+GET reddit.com /feed
+LIST_DOMAIN slack.com
+CLEAR_DOMAIN whatsapp.com
+CONTAINS dropbox.com /admin
+PUT linkedin.com / SearchPage 421897982
+PUT youtube.com / HomePage 44951624
+GET github.com /api
+LIST_DOMAIN linkedin.com
+CONTAINS reddit.com /analytics
+PUT instagram.com /contact FeedPage 260658428
+CONTAINS youtube.com /
+LIST_DOMAIN microsoft.com
+PUT slack.com /api HelpPage 720841831
+COUNT_DOMAIN stackoverflow.com
+CONTAINS wikipedia.org /login
+PUT zoom.us /docs Dashboard 956395392
+PUT dropbox.com /docs Reports 506234818
+PUT twitter.com /feed DownloadPage 308140970
+GET twitter.com /feed
+PUT stackoverflow.com /settings SettingsPage 935956278
+GET zoom.us /docs
+CLEAR
+REMOVE slack.com /
+PUT wikipedia.org /login AboutPage 646867589
+PUT instagram.com /music DownloadPage 115935556
+CONTAINS instagram.com /music
+PUT netflix.com /download Billing 756750611
+GET netflix.com /download
+PUT amazon.com /music ContactPage 446422977
+GET netflix.com /download
+COUNT_DOMAIN amazon.com
+COUNT_DOMAIN slack.com
+GET wikipedia.org /login
+CLEAR_DOMAIN youtube.com
+CONTAINS github.com /reports
+PUT wikipedia.org /settings APIPage 240283320
+PUT whatsapp.com /videos APIPage 368409075
+GET netflix.com /download
+PUT zoom.us /home Support 419556175
+PUT whatsapp.com /music ErrorPage 530903304
+GET wikipedia.org /settings
+CONTAINS youtube.com /images
+PUT dropbox.com /admin NewsPage 268694426
+PUT facebook.com /home Reports 853898622
+REMOVE facebook.com /dashboard
+CONTAINS dropbox.com /admin
+GET reddit.com /search
+GET dropbox.com /admin
+CONTAINS whatsapp.com /music
+GET netflix.com /download
+GET wikipedia.org /settings
+GET zoom.us /home
+GET whatsapp.com /videos
+LIST_DOMAIN netflix.com
+GET wikipedia.org /download
+GET netflix.com /download
+LIST_DOMAIN zoom.us
+PUT amazon.com /upload DownloadPage 555605283
+COUNT_DOMAIN wikipedia.org
+GET microsoft.com /search
+CONTAINS whatsapp.com /videos
+PUT discord.com /news LoginPage 724499119
+PUT wikipedia.org /about ImagesPage 35232323
+CLEAR
+COUNT_DOMAIN wikipedia.org
+GET microsoft.com /contact
+REMOVE slack.com /login
+REMOVE wikipedia.org /feed
+PUT slack.com /videos SettingsPage 792850462
+PUT youtube.com /dashboard Analytics 46933404
+LIST_DOMAIN slack.com

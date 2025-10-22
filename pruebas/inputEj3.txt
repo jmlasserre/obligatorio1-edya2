@@ -1,16 +1,15 @@
-15
+14
 PUT google.com /images ImagePage 3000
 PUT google.com /home HomePage 5000
 PUT twitter.com /dev DevSite 5000
+CLEAR_DOMAIN google.com
+COUNT_DOMAIN google.com
 GET google.com /images
 GET google.com /home
-COUNT_DOMAIN netflix.com
-COUNT_DOMAIN google.com
-LIST_DOMAIN twitch.com
+CLEAR_DOMAIN twitch.com
+SIZE
+LIST_DOMAIN twitter.com
+CLEAR_DOMAIN twitter.com
+LIST_DOMAIN twitter.com
 LIST_DOMAIN google.com
-REMOVE google.com /images
 SIZE
-COUNT_DOMAIN google.
-REMOVE aulas.ort.com /all
-SIZE
-couCOUNT_DOMAIN aulas.ort.com
