@@ -1,20 +1,9 @@
-19
-PUT google.com /images ImagePage 3000
-PUT google.com /home HomePage 5000
-PUT twitter.com /dev DevSite 5000
-GET google.com /images
-GET google.com /home
-GET twitch.com /asd
-GET twitter.com /dev
+8
+PUT slack.com /home HolaPage 20000
+CONTAINS slack.com /home
+GET slack.com /home
+PUT slack.com /home sadsad 20
+GET slack.com /home
+LIST_DOMAIN slack.com
+CLEAR
 SIZE
-PUT google.com /images NuevaPagLol 69420
-GET google.com /images
-SIZE
-CONTAINS twitter.com /dev
-CONTAINS goog.com /derp
-COUNT_DOMAIN google.com
-COUNT_DOMAIN fd.com
-COUNT_DOMAIN twitter.com
-LIST_DOMAIN twitter.com
-LIST_DOMAIN google.com
-LIST_DOMAIN a.com
