@@ -115,22 +115,6 @@ public:
         cout << endl;
     }
 
-    ListImp<string> *obtenerPaths()
-    {
-        int bucketSize = recursos.getSize();
-        if (bucketSize == 0)
-            return nullptr;
-        ListImp<string> *listaPaths = new ListImp<string>();
-        for (int i = 0; i < bucketSize; i++)
-        {
-            NodoHash rec = recursos.get(0);
-            listaPaths->insert(rec.getPath());
-            recursos.removeAt(0);
-            recursos.insert(rec);
-        }
-        return listaPaths;
-    }
-
     void eliminarRecurso(string path)
     {
         int bucketSize = recursos.getSize();
@@ -152,6 +136,8 @@ public:
             nueva->removeAt(0);
         }
     }
+
+    ListImp<NodoHash> getRecursos() { return this->recursos; }
 };
 
 class TablaHash
@@ -344,7 +330,7 @@ public:
     }
 
     // para uso en dominio_path
-    bool eliminarEnPaths(string dominio, string path) // mirar no se si esta bien.
+    bool eliminarEnPaths(string dominio, string path)
     {
         int pos = miHash1(dominio + path) % largo;
         ListImp<NodoHash> *bucket = tabla[pos];
@@ -364,27 +350,6 @@ public:
             bucket->insert(nodo);
         }
         return false;
-    }
-
-    ListImp<string> *obtenerPathsDeDominio(string dominio)
-    {
-        int pos = miHash1(dominio) % largo;
-        ListImp<NodoDominio *> *bucket = tablaDominios[pos];
-        int bucketSize = bucket->getSize();
-
-        for (int i = 0; i < bucketSize; i++)
-        {
-            NodoDominio *dom = bucket->get(0);
-            bucket->removeAt(0);
-            if (dom->getNombre() == dominio)
-            {
-                ListImp<string> *paths = dom->obtenerPaths();
-                bucket->insert(dom);
-                return paths; // retorna la lista de paths de ese dominio.
-            }
-            bucket->insert(dom);
-        }
-        return nullptr; // Si no tiene nada retorna lista vacia
     }
 
     bool eliminarEnDominios(string dominio)
@@ -453,6 +418,22 @@ public:
     {
         return tablaDominios[i];
     }
+
+    ListImp<NodoHash> getRecursosByDominio(string dominio){
+        int pos = miHash1(dominio)%largo;
+        ListImp<NodoDominio*>* bucket = tablaDominios[pos];
+        int bucketSize = bucket->getSize();
+        for (int i = 0; i < bucketSize; i++){
+            NodoDominio* dom = bucket->get(0);
+            if (dom->getNombre() == dominio){
+                ListImp<NodoHash> lista = dom->getRecursos();
+                return lista;
+            }
+            bucket->removeAt(0);
+            bucket->insert(dom);
+        }
+        return ListImp<NodoHash>();
+    }
 };
 
 class Cache
@@ -520,15 +501,11 @@ public:
     }
     void CLEAR_DOMAIN(string dominio, bool clear)
     {
-        ListImp<string> *paths = dominios->obtenerPathsDeDominio(dominio);
-        if (!paths)
-            return;
-        while (paths->getSize() > 0)
-        {
-            string path = paths->get(0);
-            // cout << path << " ";
-            dominio_path->eliminarEnPaths(dominio, path);
-            paths->removeAt(0);
+        ListImp<NodoHash> lista = dominios->getRecursosByDominio(dominio);
+        while (lista.getSize() > 0){
+            NodoHash rec = lista.get(0);
+            dominio_path->eliminarEnPaths(dominio, rec.getPath());
+            lista.removeAt(0);
         }
         if (!clear) dominios->eliminarEnDominios(dominio);
     }

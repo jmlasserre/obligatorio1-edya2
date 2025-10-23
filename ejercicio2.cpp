@@ -25,7 +25,7 @@ struct NodoHash
 
     NodoHash() : indices(), dominio(""), path(""), titulo(""), tiempo(0), libre(true) {}
 
-    NodoHash(string dominio, string path, string titulo, int tiempo) : dominio(dominio), path(path), titulo(titulo), tiempo(tiempo) {}
+    NodoHash(string dominio, string path, string titulo, int tiempo) : dominio(dominio), path(path), titulo(titulo), tiempo(tiempo), libre(false) {}
 };
 
 class TablaHash
@@ -70,15 +70,6 @@ public:
         for (int i = 0; i < largo; i++)
             tabla[i] = nullptr;
     }
-
-    /*void clear()
-    {
-        for (int i = 0; i < largo; i++)
-        {
-            delete tabla[i];
-            tabla[i] = NULL;
-        }
-    }*/
 
     int cantElementos()
     {
@@ -128,7 +119,7 @@ public:
                     return;
                 }
             }
-            pos = (miHash1(dominio) + (++intentos) * ((miHash2(dominio) % (largo - 1)) + 1)) % largo;
+            pos = (miHash1(dominio) + (++intentos) * (miHash2(dominio))) % largo;
         }
         if (!tabla[pos])
         {
@@ -156,11 +147,12 @@ public:
                 if (tabla[pos]->dominio == dominio)
                     return &tabla[pos]->indices;
             }
-            pos = (miHash1(dominio) + (++intentos) * ((miHash2(dominio) % (largo - 1)) + 1)) % largo;
+            pos = (miHash1(dominio) + (++intentos) * (miHash2(dominio))) % largo;
         }
         return nullptr;
     }
-
+    // Cálculo de hash doble adaptado de https://hash-table.uruguayan.ninja/16?clicks=4
+    // Función de inserción adaptada de https://www.geeksforgeeks.org/dsa/double-hashing/
     int insertarEnPaths(string dominio, string path, string titulo, int tiempo)
     {
         float fc = (float)(cantidad + 1) / (float)largo;
@@ -177,7 +169,7 @@ public:
                     return pos;
                 }
             }
-            pos = (miHash1(dominio + path) + (++intentos) * ((miHash2(dominio + path) % (largo - 1)) + 1)) % largo;
+            pos = (miHash1(dominio + path) + (++intentos) * (miHash2(dominio + path))) % largo;
         }
         if (fc <= 0.7)
         {
@@ -229,7 +221,7 @@ public:
                     return tabla[pos];
                 }
             }
-            pos = (miHash1(dominio + path) + (++intentos) * ((miHash2(dominio + path) % (largo - 1)) + 1)) % largo;
+            pos = (miHash1(dominio + path) + (++intentos) * (miHash2(dominio + path))) % largo;
         }
         return nullptr;
     }
@@ -251,7 +243,7 @@ public:
                     return pos;
                 }
             }
-            pos = (miHash1(dominio + path) + (++intentos) * ((miHash2(dominio + path) % (largo - 1)) + 1)) % largo;
+            pos = (miHash1(dominio + path) + (++intentos) * (miHash2(dominio + path))) % largo;
         }
         return -1;
     }
@@ -276,7 +268,7 @@ public:
                     return;
                 }
             }
-            pos = (miHash1(dominio) + (++intentos) * ((miHash2(dominio) % (largo - 1)) + 1)) % largo;
+            pos = (miHash1(dominio) + (++intentos) * (miHash2(dominio))) % largo;
         }
     }
 };

@@ -177,44 +177,7 @@ public:
         return cantidadConjuntos;
     }
 };
-/*
-void intercambiarAristas(Arista &a, Arista &b)
-{
-    Arista aux = a;
-    a = b;
-    b = aux;
-}
 
-// El algoritmo de particion y el quicksort esta basado en la version de Lomuto presentada
-// en 'Introduction to Algorithms' (Cormen et al.), capítulo 7, página 171.
-int particion(Arista aristas[], int primEl, int segEl)
-{
-
-    int pivot = aristas[segEl].getPeso();
-    int i = primEl - 1;
-
-    for (int j = primEl; j < segEl; j++)
-    {
-        if (aristas[j].getPeso() <= pivot)
-        {
-            i++;
-            intercambiarAristas(aristas[i], aristas[j]);
-        }
-    }
-    intercambiarAristas(aristas[i + 1], aristas[segEl]);
-    return i + 1;
-}
-
-void quickSort(Arista aristas[], int primEl, int segEl)
-{
-    if (primEl < segEl)
-    {
-        int pi = particion(aristas, primEl, segEl); // posicion del pivote
-        quickSort(aristas, primEl, pi - 1);         // Elementos menores que el pivote
-        quickSort(aristas, pi + 1, segEl);          // Elementos mayores que el pivote
-    }
-}
-*/
 class Grafo
 {
 private:

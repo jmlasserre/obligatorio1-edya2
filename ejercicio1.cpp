@@ -39,6 +39,8 @@ class ArbolAVL
 {
 private:
     bool aceptaReps;
+    int cantidad;
+    NodoAVL *raiz;
 
     int tamanio(NodoAVL *n) { return n ? n->tamSub : 0; }
 
@@ -100,14 +102,13 @@ private:
     }
 
 public:
-    int cantidad;
-    NodoAVL *raiz;
     ArbolAVL(bool aceptaReps)
     {
         cantidad = 0;
         raiz = NULL;
         this->aceptaReps = aceptaReps;
     }
+
     void encontrarJugador(NodoAVL *raiz, int id)
     {
         if (!raiz)
@@ -125,6 +126,7 @@ public:
         else
             encontrarJugador(raiz->izq, id);
     }
+
     // Adaptado de las slides del curso (https://avl.uruguayan.ninja/7)
     void agregarNodo(NodoAVL *&raiz, int paramMainJugador, int paramSecJugador, string nombreJugador)
     {
@@ -180,6 +182,40 @@ public:
             rotarIzquierda(raiz);
         }
     }
+
+    int puntajeSuperiorA(NodoAVL *r, int puntaje)
+    {
+        if (!r)
+            return 0;
+        if (r->paramMain > puntaje)
+        {
+            return (r->der ? r->der->tamSub : 0) + 1 + r->reps + puntajeSuperiorA(r->izq, puntaje);
+        }
+        else if (r->paramMain < puntaje)
+        {
+            return puntajeSuperiorA(r->der, puntaje);
+        }
+        else
+        {
+            return (r->der ? r->der->tamSub : 0) + 1 + r->reps;
+        }
+    }
+
+    int getCantidad() { return this->cantidad; }
+
+    void insertarNodo(int paramMainJugador, int paramSecJugador, string nombreJugador)
+    {
+        agregarNodo(this->raiz, paramMainJugador, paramSecJugador, nombreJugador);
+    }
+
+    void find(int id)
+    {
+        encontrarJugador(this->raiz, id);
+    }
+
+    int rank(int score){
+        return puntajeSuperiorA(this->raiz, score);
+    }
 };
 
 class Ranking
@@ -189,19 +225,6 @@ private:
     ArbolAVL *puntajes;
     int puntajeMax;
     string top1;
-
-    int puntajeSuperiorA(NodoAVL *r, int puntaje)
-    {
-        if (!r)
-            return 0;
-        if (r->paramMain > puntaje){
-            return (r->der ? r->der->tamSub : 0) + 1 + r->reps + puntajeSuperiorA(r->izq, puntaje);
-        } else if (r->paramMain < puntaje){
-            return puntajeSuperiorA(r->der, puntaje);
-        } else {
-            return (r->der ? r->der->tamSub : 0) + 1 + r->reps;
-        }
-    }
 
 public:
     Ranking()
@@ -213,11 +236,11 @@ public:
     }
     void ADD(int idJugador, string nombreJugador, int puntajeJugador)
     {
-        int cantTemp = jugadores->cantidad;
-        jugadores->agregarNodo(jugadores->raiz, idJugador, puntajeJugador, nombreJugador);
-        if (cantTemp < jugadores->cantidad)
+        int cantTemp = jugadores->getCantidad();
+        jugadores->insertarNodo(idJugador, puntajeJugador, nombreJugador);
+        if (cantTemp < jugadores->getCantidad())
         { // se agregó un jugador
-            puntajes->agregarNodo(puntajes->raiz, puntajeJugador, idJugador, nombreJugador);
+            puntajes->insertarNodo(puntajeJugador, idJugador, nombreJugador);
             if (puntajeJugador > puntajeMax)
             {
                 puntajeMax = puntajeJugador;
@@ -228,12 +251,12 @@ public:
 
     void FIND(int id)
     {
-        jugadores->encontrarJugador(jugadores->raiz, id);
+        jugadores->find(id);
     }
 
     void RANK(int puntaje)
     {
-        cout << puntajeSuperiorA(puntajes->raiz, puntaje) << endl;
+        cout << puntajes->rank(puntaje) << endl;
     }
 
     void TOP1()
@@ -243,7 +266,7 @@ public:
 
     void COUNT()
     {
-        cout << jugadores->cantidad << endl;
+        cout << jugadores->getCantidad() << endl;
     }
 };
 

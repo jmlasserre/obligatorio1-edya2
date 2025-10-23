@@ -140,6 +140,8 @@ public:
     }
 };
 
+// Fuente utilizada para el main: https://www.geeksforgeeks.org/dsa/merge-k-sorted-linked-lists-set-2-using-min-heap/
+
 int main()
 {
 
@@ -158,7 +160,7 @@ int main()
 
         for (int j = 0; j < Ni; j++)
         {
-            cin >> listas[i][j]; // primer elemento de la lista
+            cin >> listas[i][j]; // cargo la lista con los valores recibidos.
         }
     }
 
@@ -174,7 +176,7 @@ int main()
     {
         if (tamanos[i] > 0)
         {
-            heap.insertar(listas[i][0], i); // inserta el primer elemento de cada lista (que lo tenemos guardao)
+            heap.insertar(listas[i][0], i); // inserta en el heap el primer elemento de cada lista (que lo tenemos guardado)
             indices[i] = 1;
         }
     }
@@ -187,7 +189,7 @@ int main()
         cout << valor << endl; // imprimo el valor y lo elimino del heap.
         heap.eliminarTope();
 
-        if (indices[listaActual] < tamanos[listaActual]) // si siguen habiendo elementos los agrego al heap
+        if (indices[listaActual] < tamanos[listaActual]) // si siguen habiendo elementos agrego uno mas al heap.
         {
             heap.insertar(listas[listaActual][indices[listaActual]], listaActual);
             indices[listaActual]++;
