@@ -1,0 +1,13 @@
+Debug: Inicio del pozo: 3
+Debug: Final del pozo: 3
+Debug: posTemp = 2
+Debug: posTemp = 2
+Debug: Valor de la mejora: 1
+Debug: Potencia actual: 2
+Debug: Nuevo rango: 4
+Debug: Inicio del pozo: 5
+Debug: Final del pozo: 6
+Debug: posTemp = 4
+Debug: Potencia actual: 2
+Debug: Nuevo rango: 6
+Imposible
