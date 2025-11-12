@@ -11,6 +11,7 @@
 
 using namespace std;
 
+// hay que cambiar esta función por una tabla de hash para acelerar. Demasiado lenta para n >= 100000
 int buscarPosicionEstudiante(string *rankingOficial, int n, string estudiante)
 {
     for (int i = 0; i < n; i++)
@@ -23,13 +24,13 @@ int buscarPosicionEstudiante(string *rankingOficial, int n, string estudiante)
     return -1;
 }
 
-int mezclar(int *array, int *temp, int izq, int medio, int der)
+long long mezclar(int *array, int *temp, int izq, int medio, int der)
 {
 
     int i = izq;       // indice para la mitad izquierda
     int j = medio + 1; // indice para la mitad derecha
     int k = izq;       // indice para el array temporal
-    int inversiones = 0;
+    long long inversiones = 0;
 
     while (i <= medio && j <= der)
     {
@@ -44,7 +45,7 @@ int mezclar(int *array, int *temp, int izq, int medio, int der)
             temp[k] = array[j];
             k++;
             j++;
-            inversiones += (medio - i + 1); // se invierte con todos los de la izquierda hasta llegar a i;
+            inversiones += (long long)(medio - i + 1); // se invierte con todos los de la izquierda hasta llegar a i;
         }
     }
 
@@ -70,9 +71,9 @@ int mezclar(int *array, int *temp, int izq, int medio, int der)
 }
 
 //esta completa el DAC, divide los array,y cuenta las inversiones
-int inversionesMergeSort(int *array, int *temp, int izq, int der)
+long long inversionesMergeSort(int *array, int *temp, int izq, int der)
 {
-    int inversiones = 0;
+    long long inversiones = 0;
 
     if (izq < der)
     {
@@ -120,7 +121,7 @@ int main()
 
     int *arrayAux = new int[cantidadEstudiantes]; // este es el temporal del mergeSort
 
-    int totalInversiones = inversionesMergeSort(posicionesSegunAyudante, arrayAux, 0, cantidadEstudiantes - 1);
+    long long totalInversiones = inversionesMergeSort(posicionesSegunAyudante, arrayAux, 0, cantidadEstudiantes - 1);
 
     cout << totalInversiones << endl;
 
@@ -131,3 +132,7 @@ int main()
 
     return 0;
 }
+
+/* Pedimos ayuda a ChatGPT para saber por qué el programa daba error con las pruebas más grandes. Inmediatamente sospechamos una cuestión de memoria.
+   Sugirió utilizar 'long long' en vez de 'int' para almacenar los resultados por las limitaciones de memoria del primero. Aplicamos su sugerencia y el problema se resolvió.
+*/ 
