@@ -1,0 +1,27 @@
+26
+PUT google.com /search SearchPage 1000
+PUT google.com /images ImagePage 1500
+PUT google.com /maps MapsPage 1200
+PUT facebook.com /feed FeedPage 2000
+PUT facebook.com /messages MessagesPage 2500
+SIZE
+COUNT_DOMAIN google.com
+COUNT_DOMAIN facebook.com
+LIST_DOMAIN google.com
+GET google.com /search
+CONTAINS yahoo.com /mail
+CONTAINS google.com /maps
+PUT google.com /search UpdatedSearch 1800
+GET google.com /search
+LIST_DOMAIN google.com
+REMOVE facebook.com /messages
+COUNT_DOMAIN facebook.com
+SIZE
+CLEAR_DOMAIN google.com
+SIZE
+COUNT_DOMAIN google.com
+LIST_DOMAIN google.com
+PUT twitter.com /home HomePage 3000
+SIZE
+CLEAR
+SIZE
