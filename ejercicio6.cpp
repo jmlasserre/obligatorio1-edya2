@@ -55,6 +55,10 @@ int main()
     // está mal la complejidad pero honestamente, ni idea. Por lo menos pasa las pruebas
     int N, M, F;
     cin >> N >> M >> F;
+
+    
+
+    /*
     Pozo* pozos = new Pozo[N];
     for (int i = 0; i < N; i++){
         int inicio, final;
@@ -102,5 +106,6 @@ int main()
         pos = final + 1;
     }
     cout << minMejoras << endl;
+    */
     return 0;
 }

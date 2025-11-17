@@ -9,6 +9,7 @@
 #include <iostream>
 #include <limits>
 #include "tads/ListImp.cpp"
+#include "tads/AVL.cpp"
 
 using namespace std;
 
@@ -23,13 +24,21 @@ public:
     ParEstPos(string est, int posicion) : estudiante(est), pos(posicion) {}
     string getEstudiante() { return this->estudiante; }
     int getPos() { return this->pos; }
-    bool operator==(const ParEstPos& otro){
-        return this->estudiante == otro.estudiante && this->pos == otro.pos;
+    bool operator==(const ParEstPos &otro)
+    {
+        return this->estudiante == otro.estudiante;
+    }
+    bool operator<(const ParEstPos &otro)
+    {
+        return this->estudiante < otro.estudiante;
+    }
+    bool operator>(const ParEstPos &otro)
+    {
+        return this->estudiante > otro.estudiante;
     }
 };
 
-// hash abierto para acelerar recorrida
-class TablaHash
+/*class TablaHash
 {
 private:
     ListImp<ParEstPos> **tabla;
@@ -54,47 +63,39 @@ public:
     TablaHash() : tabla(nullptr), largo(-1), cantidad(0) {}
     TablaHash(int max)
     {
-        tabla = new ListImp<ParEstPos>*[max];
+        tabla = new ListImp<ParEstPos> *[max];
         cantidad = 0;
         largo = max;
-        for (int i = 0; i < largo; i++) tabla[i] = new ListImp<ParEstPos>();
+        for (int i = 0; i < largo; i++)
+            tabla[i] = new ListImp<ParEstPos>();
     }
 
     void insertar(ParEstPos estpos)
     {
-        int pos = miHash1(estpos.getEstudiante())%largo;
+        int pos = miHash1(estpos.getEstudiante()) % largo;
         tabla[pos]->insert(estpos);
         cantidad++;
     }
 
-    int buscar(string estudiante){
-        int pos = miHash1(estudiante)%largo;
-        ListImp<ParEstPos>* bucket = tabla[pos];
+    int buscar(string estudiante)
+    {
+        int pos = miHash1(estudiante) % largo;
+        ListImp<ParEstPos> *bucket = tabla[pos];
         int largoBucket = bucket->getSize();
-        for (int i = 0; i < largoBucket; i++){
+        for (int i = 0; i < largoBucket; i++)
+        {
             ParEstPos estpos = bucket->get(i);
-            if (estpos.getEstudiante() == estudiante) return estpos.getPos();
+            if (estpos.getEstudiante() == estudiante)
+                return estpos.getPos();
         }
         return -1;
     }
-};
+};*/
 
-int buscarPosicionEstudiante(TablaHash* rankingOficial, int n, string estudiante){
-    return rankingOficial->buscar(estudiante);
-}
-
-// hay que cambiar esta función por una tabla de hash para acelerar. Demasiado lenta para n >= 100000
-/*int buscarPosicionEstudiante(string *rankingOficial, int n, string estudiante)
+ParEstPos buscarPosicionEstudiante(ArbolAVL<ParEstPos> *rankingOficial, int n, string estudiante)
 {
-    for (int i = 0; i < n; i++)
-    {
-        if (rankingOficial[i] == estudiante)
-        {
-            return i;
-        }
-    }
-    return -1;
-}*/
+    return rankingOficial->buscar(ParEstPos(estudiante, 0));
+}
 
 long long mezclar(int *array, int *temp, int izq, int medio, int der)
 {
@@ -165,12 +166,14 @@ int main()
 {
     int cantidadEstudiantes;
     cin >> cantidadEstudiantes;
-    TablaHash* rankingOficial = new TablaHash(cantidadEstudiantes);
-    for (int i = 0; i < cantidadEstudiantes; i++){
+    ArbolAVL<ParEstPos> *rankingOficial = new ArbolAVL<ParEstPos>();
+    for (int i = 0; i < cantidadEstudiantes; i++)
+    { // O(N)
         string estudiante;
         cin >> estudiante;
-        rankingOficial->insertar(ParEstPos(estudiante, i));
+        rankingOficial->insertar(ParEstPos(estudiante, i)); // O(log N)
     }
+    // total: O(N log N)
     /*string *rankingOficial = new string[cantidadEstudiantes];
     for (int i = 0; i < cantidadEstudiantes; i++)
     {
@@ -178,7 +181,6 @@ int main()
         cin >> estudiante;
         rankingOficial[i] = estudiante;
     }*/
-
     string *rankingAyudante = new string[cantidadEstudiantes];
     for (int i = 0; i < cantidadEstudiantes; i++)
     {
@@ -192,9 +194,13 @@ int main()
     for (int i = 0; i < cantidadEstudiantes; i++)
     {
         string estudianteActual = rankingAyudante[i];
-        int posicionOficial = buscarPosicionEstudiante(rankingOficial, cantidadEstudiantes, estudianteActual);
-        posicionesSegunAyudante[i] = posicionOficial;
+        ParEstPos posicionOficial = buscarPosicionEstudiante(rankingOficial, cantidadEstudiantes, estudianteActual);
+        posicionesSegunAyudante[i] = posicionOficial.getPos();
     }
+    // DEBUG
+    /*for (int i = 0; i < cantidadEstudiantes; i++){
+        cout << posicionesSegunAyudante[i] << endl;
+    }*/
 
     int *arrayAux = new int[cantidadEstudiantes]; // este es el temporal del mergeSort
 
