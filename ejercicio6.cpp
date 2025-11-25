@@ -69,9 +69,7 @@ int main()
         cin >> pos >> potencia;
         mejoras->insert(Mejora(pos, potencia));
     }
-    int minMejoras = 0;
-    int pos = 0;
-    int potencia = 1;
+    int minMejoras = 0, pos = 0, potencia = 1;
     MaxHeap<Mejora> *inventario = new MaxHeap<Mejora>(M);
 
     for (int i = 0; i < N && (pos + potencia) < F; i++)

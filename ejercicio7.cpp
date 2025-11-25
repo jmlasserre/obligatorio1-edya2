@@ -202,11 +202,6 @@ int main()
 
     cout << totalInversiones << endl;
 
-    delete rankingOficial;
-    delete[] rankingAyudante;
-    delete[] posicionesSegunAyudante;
-    delete[] arrayAux;
-
     return 0;
 }
 
