@@ -11,11 +11,6 @@
 
 using namespace std;
 
-/* Fuentes: 
-- LeetCode (https://leetcode.com/problems/remove-boxes/solutions/1402561/cjavapython-top-down-dp-clear-explanatio-0fxk/)
-- AlgoMonster (https://algo.monster/liteproblems/546)
-*/
-
 int dp(int *cristales, int l, int r, int k, int ***memo)
 {
     if (l > r)
@@ -39,7 +34,7 @@ int dp(int *cristales, int l, int r, int k, int ***memo)
 int eliminarCristales(int *&cristales, int largo)
 {
     int ***memo = new int **[largo];
-    for (int i = 0; i < largo; i++) // inicializar matriz
+    for (int i = 0; i < largo; i++)
     {
         memo[i] = new int *[largo];
         for (int j = 0; j < largo; j++)

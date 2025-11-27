@@ -12,14 +12,6 @@ using namespace std;
 
 const int INT_MIN = numeric_limits<int>::min();
 
-/* Fuentes consultadas:
-- G4G (https://www.geeksforgeeks.org/dsa/0-1-knapsack-problem-dp-10/)
-- AlgoMonster (https://algo.monster/problems/knapsack_intro)
-- DeepSeek:
-    Prompt: "Ayúdame a desarrollar la intuición detrás de un knapsack 0/1 con dos restricciones (un peso y un volumen)
-    con tabulación en C++, no hagas el código pero dame algunas ideas de cómo poder razonarlo y verlo"
-*/
-
 int main()
 {
     int N, S, L;

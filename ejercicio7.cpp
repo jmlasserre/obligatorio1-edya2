@@ -46,9 +46,9 @@ ParEstPos buscarPosicionEstudiante(ArbolAVL<ParEstPos> *rankingOficial, int n, s
 long long mezclar(int *array, int *temp, int izq, int medio, int der)
 {
 
-    int i = izq;       // indice para la mitad izquierda
-    int j = medio + 1; // indice para la mitad derecha
-    int k = izq;       // indice para el array temporal
+    int i = izq;
+    int j = medio + 1;
+    int k = izq;
     long long inversiones = 0;
 
     while (i <= medio && j <= der)
@@ -59,23 +59,23 @@ long long mezclar(int *array, int *temp, int izq, int medio, int der)
             k++;
             i++;
         }
-        else // array[i] > array[j]
+        else
         {
             temp[k] = array[j];
             k++;
             j++;
-            inversiones += (long long)(medio - i + 1); // se invierte con todos los de la izquierda hasta llegar a i;
+            inversiones += (long long)(medio - i + 1);
         }
     }
 
-    while (i <= medio) // si sobraron elementos en la izquierda los copio
+    while (i <= medio)
     {
         temp[k] = array[i];
         k++;
         i++;
     }
 
-    while (j <= der) // si sobraron elementos en la derecha los copio
+    while (j <= der)
     {
         temp[k] = array[j];
         k++;
@@ -89,7 +89,6 @@ long long mezclar(int *array, int *temp, int izq, int medio, int der)
     return inversiones;
 }
 
-// esta completa el DAC, divide los array,y cuenta las inversiones
 long long inversionesMergeSort(int *array, int *temp, int izq, int der)
 {
     long long inversiones = 0;
@@ -98,10 +97,8 @@ long long inversionesMergeSort(int *array, int *temp, int izq, int der)
     {
         int medio = (izq + der) / 2;
 
-        // Divido el array en dos hasta llegar a casos base
         inversiones += inversionesMergeSort(array, temp, izq, medio);
         inversiones += inversionesMergeSort(array, temp, medio + 1, der);
-        // mezclo las mitades y sumo
         inversiones += mezclar(array, temp, izq, medio, der);
     }
 
@@ -114,12 +111,11 @@ int main()
     cin >> cantidadEstudiantes;
     ArbolAVL<ParEstPos> *rankingOficial = new ArbolAVL<ParEstPos>();
     for (int i = 0; i < cantidadEstudiantes; i++)
-    { // O(N)
+    {
         string estudiante;
         cin >> estudiante;
-        rankingOficial->insertar(ParEstPos(estudiante, i)); // O(log N)
+        rankingOficial->insertar(ParEstPos(estudiante, i));
     }
-    // total: O(N log N)
 
     string *rankingAyudante = new string[cantidadEstudiantes];
     for (int i = 0; i < cantidadEstudiantes; i++)
@@ -129,7 +125,6 @@ int main()
         rankingAyudante[i] = estudiante;
     }
 
-    // las posiciones oficiales estan en el rankingOficial, veo en que posiciones puso el ayudante cada posicionOficial
     int *posicionesSegunAyudante = new int[cantidadEstudiantes];
     for (int i = 0; i < cantidadEstudiantes; i++)
     {
@@ -138,7 +133,7 @@ int main()
         posicionesSegunAyudante[i] = posicionOficial.getPos();
     }
 
-    int *arrayAux = new int[cantidadEstudiantes]; // este es el temporal del mergeSort
+    int *arrayAux = new int[cantidadEstudiantes];
 
     long long totalInversiones = inversionesMergeSort(posicionesSegunAyudante, arrayAux, 0, cantidadEstudiantes - 1);
 

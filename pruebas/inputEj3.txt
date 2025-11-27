@@ -1,9 +1,0 @@
-8
-PUT slack.com /home HolaPage 20000
-CONTAINS slack.com /home
-GET slack.com /home
-PUT slack.com /home sadsad 20
-GET slack.com /home
-LIST_DOMAIN slack.com
-CLEAR
-SIZE

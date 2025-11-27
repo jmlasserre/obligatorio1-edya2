@@ -12,8 +12,6 @@
 using namespace std;
 #define MAX_VALUE numeric_limits<int>::max()
 
-// Adaptado de: https://bt.uruguayan.ninja/ (diapositivas del curso)
-
 bool posicionValida(int i, int j, int M, int N)
 {
     return (i >= 0 && j >= 0 && i < M && j < N);
@@ -85,7 +83,7 @@ int buscarProducto(char **fc, int M, int N, char aBuscar)
             minDist[i][j] = MAX_VALUE;
         }
     }
-    minDist[0][0] = 0; // celda inicial
+    minDist[0][0] = 0;
     visitados[0][0] = true;
     int mejoresPasos = MAX_VALUE;
     buscarProductoBT(fc, visitados, minDist, M, N, aBuscar, 0, 0, 0, mejoresPasos);
@@ -134,7 +132,6 @@ int main()
             }
         }
         int pasos = buscarProducto(fc, M, N, aBuscar);
-        // cout << pasos << endl;
         if (pasos < minPasos)
         {
             minPasos = pasos;
