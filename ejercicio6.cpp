@@ -97,7 +97,6 @@ int main()
             cout << "Imposible" << endl;
             return 0;
         }
-        pos = final + 1;
     }
     cout << minMejoras << endl;
     return 0;
