@@ -38,60 +38,6 @@ public:
     }
 };
 
-/*class TablaHash
-{
-private:
-    ListImp<ParEstPos> **tabla;
-    int largo, cantidad;
-
-    // Adaptado de: https://cp-algorithms.com/string/string-hashing.html (polynomial rolling hash function)
-    unsigned int miHash1(string key)
-    {
-        int p = 31;
-        unsigned int hash_value = 0;
-        unsigned int p_pow = 1;
-        int m = 1e9 + 9;
-        for (char c : key)
-        {
-            hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
-            p_pow = (p_pow * p) % m;
-        }
-        return hash_value;
-    }
-
-public:
-    TablaHash() : tabla(nullptr), largo(-1), cantidad(0) {}
-    TablaHash(int max)
-    {
-        tabla = new ListImp<ParEstPos> *[max];
-        cantidad = 0;
-        largo = max;
-        for (int i = 0; i < largo; i++)
-            tabla[i] = new ListImp<ParEstPos>();
-    }
-
-    void insertar(ParEstPos estpos)
-    {
-        int pos = miHash1(estpos.getEstudiante()) % largo;
-        tabla[pos]->insert(estpos);
-        cantidad++;
-    }
-
-    int buscar(string estudiante)
-    {
-        int pos = miHash1(estudiante) % largo;
-        ListImp<ParEstPos> *bucket = tabla[pos];
-        int largoBucket = bucket->getSize();
-        for (int i = 0; i < largoBucket; i++)
-        {
-            ParEstPos estpos = bucket->get(i);
-            if (estpos.getEstudiante() == estudiante)
-                return estpos.getPos();
-        }
-        return -1;
-    }
-};*/
-
 ParEstPos buscarPosicionEstudiante(ArbolAVL<ParEstPos> *rankingOficial, int n, string estudiante)
 {
     return rankingOficial->buscar(ParEstPos(estudiante, 0));
@@ -174,13 +120,7 @@ int main()
         rankingOficial->insertar(ParEstPos(estudiante, i)); // O(log N)
     }
     // total: O(N log N)
-    /*string *rankingOficial = new string[cantidadEstudiantes];
-    for (int i = 0; i < cantidadEstudiantes; i++)
-    {
-        string estudiante;
-        cin >> estudiante;
-        rankingOficial[i] = estudiante;
-    }*/
+
     string *rankingAyudante = new string[cantidadEstudiantes];
     for (int i = 0; i < cantidadEstudiantes; i++)
     {
@@ -197,10 +137,6 @@ int main()
         ParEstPos posicionOficial = buscarPosicionEstudiante(rankingOficial, cantidadEstudiantes, estudianteActual);
         posicionesSegunAyudante[i] = posicionOficial.getPos();
     }
-    // DEBUG
-    /*for (int i = 0; i < cantidadEstudiantes; i++){
-        cout << posicionesSegunAyudante[i] << endl;
-    }*/
 
     int *arrayAux = new int[cantidadEstudiantes]; // este es el temporal del mergeSort
 
@@ -215,7 +151,3 @@ int main()
 
     return 0;
 }
-
-/* Pedimos ayuda a ChatGPT para saber por qué el programa daba error con las pruebas más grandes. Inmediatamente sospechamos una cuestión de memoria.
-   Sugirió utilizar 'long long' en vez de 'int' para almacenar los resultados por las limitaciones de memoria del primero. Aplicamos su sugerencia y el problema se resolvió.
-*/
