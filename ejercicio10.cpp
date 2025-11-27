@@ -38,16 +38,6 @@ void deshacerMovimiento(bool **vis, int i, int j)
     vis[i][j] = false;
 }
 
-bool esMejorSolucion(int pasosActuales, int mejoresPasos)
-{
-    return pasosActuales < mejoresPasos;
-}
-
-bool esMejorOIgualSolucion(int pasosActuales, int mejoresPasos)
-{
-    return pasosActuales <= mejoresPasos;
-}
-
 bool puedoPodar(int pasosActuales, int mejoresPasos, int **minDist, int i, int j)
 {
     return (pasosActuales >= mejoresPasos || (minDist[i][j] != MAX_VALUE && pasosActuales >= minDist[i][j]));
